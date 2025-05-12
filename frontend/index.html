@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QrFood - Меню</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Можно добавить ссылку на шрифт, если нужно, например, Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>QrFood</h1>
+            <!-- Позже здесь может быть логотип -->
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <nav id="category-tabs" class="category-nav">
+                <!-- Категории будут загружены сюда из JS -->
+                <p class="loading-text">Загрузка категорий...</p>
+            </nav>
+
+            <section id="menu-items-grid" class="menu-grid">
+                <!-- Карточки блюд будут загружены сюда из JS -->
+                <p class="loading-text">Загрузка меню...</p>
+            </section>
+
+            <!-- Секция корзины (пока скрыта или очень простая) -->
+            <aside id="cart" class="cart-section">
+                <h2>Корзина</h2>
+                <div id="cart-items-list">
+                    <p>Корзина пуста.</p>
+                </div>
+                <div class="cart-total">
+                    <strong>Итого: <span id="cart-total-amount">0.00</span> руб.</strong>
+                </div>
+                <div id="order-options" class="order-options-section">
+                    <h3>Способ получения:</h3>
+                    <div class="form-group">
+                        <label>
+                            <input type="radio" name="orderType" value="table" checked> За столиком
+                        </label>
+                        <label>
+                            <input type="radio" name="orderType" value="takeaway"> Самовывоз
+                        </label>
+                    </div>
+
+                    <div id="table-number-group" class="form-group">
+                        <label for="table-number">Номер столика:</label>
+                        <input type="text" id="table-number" name="tableNumber" placeholder="Например, 5 или 12А">
+                    </div>
+
+                    <div id="pickup-time-group" class="form-group" style="display: none;"> <!-- Скрыто по умолчанию -->
+                        <label for="pickup-time">Время самовывоза (необязательно):</label>
+                        <input type="time" id="pickup-time" name="pickupTime">
+                    </div>
+                </div>
+                <button id="checkout-button" class="btn btn-primary" disabled>
+                    <span class="btn-text">Оформить заказ</span>
+                    <!-- Спиннер будет добавлен сюда через JS -->
+                </button>
+            </aside>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>QrFood</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

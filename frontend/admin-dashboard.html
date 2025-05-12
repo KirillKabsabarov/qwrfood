@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QrFood - Панель администратора</title>
+    <link rel="stylesheet" href="admin-style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>QrFood Admin</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="#" data-section="dashboard-overview" class="active">Обзор</a></li>
+                    <li><a href="#" data-section="menu-management">Управление меню</a></li>
+                    <li><a href="#" data-section="orders-management">Заказы</a></li>
+                    <li><a href="#" data-section="tables-management">Столики</a></li>
+                    <!-- Добавить другие разделы по необходимости -->
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logout-button" class="btn btn-danger">Выйти</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h2 id="current-section-title">Обзор</h2>
+                <div class="user-info">
+                    <span id="admin-username">Администратор</span>
+                    <!-- Иконка пользователя или аватар -->
+                </div>
+            </header>
+            
+            <div class="content-area">
+                <!-- Сюда будет загружаться контент выбранного раздела -->
+                <section id="dashboard-overview-content" class="content-section active-section">
+                    <h4>Добро пожаловать в панель администратора!</h4>
+                    <p>Выберите раздел в меню слева для начала работы.</p>
+                </section>
+
+                <section id="menu-management-content" class="content-section">
+                    <!-- Контент для управления меню будет здесь -->
+                    <p>Загрузка управления меню...</p>
+                </section>
+
+                <section id="orders-management-content" class="content-section">
+                    <!-- Контент для управления заказами будет здесь -->
+                     <p>Загрузка управления заказами...</p>
+                </section>
+
+                <section id="tables-management-content" class="content-section">
+                    <!-- Контент для управления столиками будет здесь -->
+                     <p>Загрузка управления столиками...</p>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="admin-app.js"></script>
+</body>
+</html>

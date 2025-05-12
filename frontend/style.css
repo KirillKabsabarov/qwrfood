@@ -1,0 +1,343 @@
+/* frontend/style.css */
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    background-color: #f4f4f4;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    width: 90%;
+    max-width: 1100px;
+    margin: auto;
+    overflow: hidden; /* Clear floats */
+    padding: 0 20px;
+}
+
+header {
+    background: #333;
+    color: #fff;
+    padding: 1rem 0;
+    text-align: center;
+    border-bottom: #0779e4 3px solid; /* Акцентный цвет (пример) */
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+}
+
+main {
+    padding: 20px 0;
+}
+
+.loading-text {
+    text-align: center;
+    font-style: italic;
+    color: #777;
+    padding: 20px;
+}
+
+/* Стили для табов категорий (очень базовые) */
+.category-nav {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+.category-tab {
+    padding: 10px 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 20px; /* Закругленные углы для табов */
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s, transform 0.2s;
+    font-weight: 500;
+}
+
+.category-tab:hover {
+    background-color: #0779e4; /* Акцентный цвет при наведении */
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.category-tab.active {
+    background-color: #0779e4; /* Акцентный цвет */
+    color: #fff;
+    border-color: #0779e4;
+}
+
+/* Стили для сетки меню (очень базовые) */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Адаптивные колонки */
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.menu-item-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px; /* Закругленные углы для карточек */
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.menu-item-card:hover {
+    transform: translateY(-5px) scale(1.02); /* Добавим легкое увеличение */
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}
+
+.menu-item-card img {
+    max-width: 100%;
+    height: 180px; /* Фиксированная высота для единообразия */
+    object-fit: cover; /* Масштабирует изображение, сохраняя пропорции и обрезая лишнее */
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.menu-item-card h3 {
+    margin: 10px 0 5px;
+    font-size: 1.25rem;
+    color: #333;
+}
+
+.menu-item-card .description {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 10px;
+    min-height: 3.6em; /* Примерно 2-3 строки текста */
+    overflow: hidden; /* Скрывать текст, который не помещается */
+    text-overflow: ellipsis; /* Добавить многоточие, если текст обрезается (может не всегда работать с overflow:hidden без доп.хитростей для многострочного) */
+    display: -webkit-box; /* Для многострочного обрезания */
+    -webkit-line-clamp: 3; /* Количество строк */
+    -webkit-box-orient: vertical;
+}
+
+
+.menu-item-card .price {
+    font-weight: bold;
+    color: #0779e4; /* Акцентный цвет */
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+}
+
+/* Кнопки */
+.btn {
+    display: inline-block;
+    background: #555;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, transform 0.2s;
+}
+
+.btn:hover {
+    background: #666;
+    transform: translateY(-1px);
+}
+
+.btn-primary {
+    background: #0779e4; /* Акцентный цвет */
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+/* Стили для корзины (очень базовые) */
+.cart-section {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 30px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.cart-section h2 {
+    text-align: center;
+    margin-top: 0;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+#cart-items-list .cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+#cart-items-list .cart-item:last-child {
+    border-bottom: none;
+}
+
+#cart-items-list .item-name {
+    flex-grow: 1;
+}
+#cart-items-list .item-price {
+    margin-left: 10px;
+    color: #555;
+}
+#cart-items-list .remove-item-btn {
+    margin-left: 15px;
+    color: #dc3545; /* Красный для удаления */
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+#cart-items-list .remove-item-btn:hover {
+    color: #c82333;
+}
+
+.cart-total {
+    text-align: right;
+    margin-top: 20px;
+    font-size: 1.2rem;
+}
+
+#checkout-button {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    font-size: 1.1rem;
+}
+
+#checkout-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    background: #333;
+    color: #fff;
+    margin-top: 30px;
+}
+
+.order-options-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.order-options-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #555;
+}
+
+.form-group input[type="text"],
+.form-group input[type="time"],
+.form-group select { /* Если будем добавлять select */
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Чтобы padding не увеличивал общую ширину */
+    font-size: 1rem;
+}
+
+.form-group input[type="radio"] {
+    margin-right: 5px;
+}
+
+/* Можно добавить стили для фокуса на полях ввода */
+.form-group input[type="text"]:focus,
+.form-group input[type="time"]:focus {
+    border-color: #0779e4; /* Акцентный цвет */
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(7, 121, 228, 0.2);
+}
+
+.btn-spinner {
+    display: inline-block;
+    width: 1em; /* Размер относительно шрифта кнопки */
+    height: 1em;
+    vertical-align: text-bottom;
+    border: .15em solid currentColor; /* Цвет текста кнопки */
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: btn-spin .75s linear infinite;
+    margin-left: 5px; /* Отступ от текста, если он есть */
+}
+
+@keyframes btn-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+#checkout-button.loading .btn-text {
+    display: none; /* Скрываем текст, когда показываем спиннер */
+}
+#checkout-button.loading .btn-spinner {
+    margin-left: 0; /* Убираем отступ, если текста нет */
+}
+
+.message {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 25px;
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: center;
+    min-width: 250px; /* Чтобы не было слишком узким */
+    opacity: 0; /* Начальная прозрачность для анимации */
+    animation: fadeInOut 5s forwards; /* 5s - общее время анимации, включая fadeOut */
+}
+
+.message.success {
+    background-color: #d4edda; /* Светло-зеленый */
+    color: #155724; /* Темно-зеленый */
+    border: 1px solid #c3e6cb;
+}
+
+.message.error {
+    background-color: #f8d7da; /* Светло-красный */
+    color: #721c24; /* Темно-красный */
+    border: 1px solid #f5c6cb;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-50%, -20px); } /* Начальное состояние: невидимо и чуть выше */
+  10% { opacity: 1; transform: translate(-50%, 0); }   /* Появление */
+  90% { opacity: 1; transform: translate(-50%, 0); }   /* Держится видимым */
+  100% { opacity: 0; transform: translate(-50%, -20px);} /* Исчезновение */
+}
+
