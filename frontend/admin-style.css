@@ -455,3 +455,33 @@ body {
     background-color: #fff8e1; /* Светло-желтый */
     border-left: 5px solid #ffc107; /* Желтый */
 }
+.admin-message { /* Отличается от .message для клиентской части, если нужно */
+    /* position: fixed; */ /* Если fixed, то поверх всего. Если нет, то в потоке. */
+    /* top: 20px; */
+    /* left: 50%; */
+    /* transform: translateX(-50%); */
+    /* Позиционируем относительно .main-content */
+    padding: 12px 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 1060; /* Выше модальных окон, если они 1050 */
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-align: center;
+    margin: 0 auto 20px auto; /* Центрируем и добавляем отступ снизу, если не fixed */
+    max-width: 80%;
+    opacity: 0; /* Для анимации появления/исчезновения */
+    transition: opacity 0.5s ease-in-out; /* Плавное появление/исчезновение */
+}
+
+.admin-message.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.admin-message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}

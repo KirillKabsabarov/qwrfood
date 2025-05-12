@@ -1,12 +1,13 @@
 // backend/models/orderModel.js
 const db = require('../data/dbConfig.js');
-const MenuItem = require('./menuItemModel.js'); // Нужен для получения актуальных цен
+const MenuItem = require('./menuItemModel.js');// Нужен для получения актуальных цен
+const Table = require('./tableModel.js'); 
 
 // Создать новый заказ
 async function createOrder(orderData, itemsData) {
     let totalAmount = 0;
     const itemsToInsert = [];
-
+    
     // Валидация и расчет totalAmount на бэкенде
     for (const item of itemsData) {
         const menuItem = await MenuItem.findById(item.menu_item_id);
@@ -27,6 +28,17 @@ async function createOrder(orderData, itemsData) {
 
     // Округляем до двух знаков после запятой
     totalAmount = parseFloat(totalAmount.toFixed(2));
+
+    if (orderData.order_type === 'table') {
+        if (!orderData.table_number) { // Эта проверка уже есть в роуте, но дублирование не помешает
+            throw new Error('Номер столика обязателен для заказа за столиком.');
+        }
+        // Ищем столик по его номеру (table_number), а не по ID, т.к. с клиента приходит номер
+        const tableExists = await db('tables').where({ table_number: orderData.table_number }).first();
+        if (!tableExists) {
+            throw new Error(`Столик с номером '${orderData.table_number}' не найден в системе.`);
+        }
+    }
 
     const orderPayload = {
         ...orderData, // table_number, pickup_time, order_type
