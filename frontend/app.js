@@ -2,7 +2,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const categoryTabsContainer = document.getElementById('category-tabs');
     const menuItemsGridContainer = document.getElementById('menu-items-grid');
-    
+
     // Элементы корзины
     const cartItemsListContainer = document.getElementById('cart-items-list');
     const cartTotalAmountElement = document.getElementById('cart-total-amount');
@@ -16,9 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableNumberInput = document.getElementById('table-number');
     const pickupTimeInput = document.getElementById('pickup-time');
 
-    const API_BASE_URL = 'http://localhost:3001/api'; 
+    const API_BASE_URL = 'http://localhost:3001/api';
 
-    let allMenuItems = []; 
+    let allMenuItems = [];
     let currentCategoryId = null;
     let cart = []; // Наша корзина - массив объектов { menuItem, quantity }
 
@@ -44,12 +44,12 @@ document.addEventListener('DOMContentLoaded', () => {
             categoryTabsContainer.innerHTML = '<p>Категории не найдены.</p>';
             return;
         }
-        categoryTabsContainer.innerHTML = ''; 
+        categoryTabsContainer.innerHTML = '';
 
         const allButton = document.createElement('button');
-        allButton.classList.add('category-tab', 'active'); 
+        allButton.classList.add('category-tab', 'active');
         allButton.textContent = 'Все';
-        allButton.dataset.categoryId = 'all'; 
+        allButton.dataset.categoryId = 'all';
         allButton.addEventListener('click', () => handleCategoryClick(null, allButton));
         categoryTabsContainer.appendChild(allButton);
 
@@ -57,8 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const tabButton = document.createElement('button');
             tabButton.classList.add('category-tab');
             tabButton.textContent = category.name;
-            tabButton.dataset.categoryId = category.id; 
-            
+            tabButton.dataset.categoryId = category.id;
+
             tabButton.addEventListener('click', () => handleCategoryClick(category.id, tabButton));
             categoryTabsContainer.appendChild(tabButton);
         });
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             allMenuItems = await response.json();
-            displayMenuItems(allMenuItems); 
+            displayMenuItems(allMenuItems);
         } catch (error) {
             console.error("Ошибка при загрузке меню:", error);
             menuItemsGridContainer.innerHTML = '<p class="error-text">Не удалось загрузить меню. Попробуйте позже.</p>';
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Функция для отображения позиций меню (карточки)
     function displayMenuItems(itemsToDisplay) {
-        menuItemsGridContainer.innerHTML = ''; 
+        menuItemsGridContainer.innerHTML = '';
 
         if (!itemsToDisplay || itemsToDisplay.length === 0) {
             menuItemsGridContainer.innerHTML = '<p>В данной категории блюд нет.</p>';
@@ -95,13 +95,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const imageUrl = item.image_url || `https://via.placeholder.com/300x200/CCCCCC/FFFFFF?Text=${encodeURIComponent(item.name)}`;
 
             card.innerHTML = `
-                <img src="${imageUrl}" alt="${item.name}">
-                <h3>${item.name}</h3>
-                <p class="description">${item.description || 'Описание отсутствует.'}</p>
-                <p class="price">${parseFloat(item.price).toFixed(2)} руб.</p>
-                <button class="btn btn-primary add-to-cart-btn" data-item-id="${item.id}">В корзину</button>
+                <div class="card-image-container">
+                    ${item.card_badge ? `<div class="card-badge">${item.card_badge}</div>` : ''} 
+                    <img src="${imageUrl}" alt="${item.name}" class="menu-item-image">
+                </div>
+                
+                <div class="text-content"> 
+                    <h3 class="item-title">${item.name}</h3>
+                    <p class="item-description">${item.description || 'Описание отсутствует.'}</p>
+                </div>
+                
+                <div class="item-footer"> 
+                    <span class="item-price">${parseFloat(item.price).toFixed(2)} ₽</span> 
+                    <button class="add-to-cart-btn" data-item-id="${item.id}">+</button>
+                </div>
             `;
-            
+
+
+
             const addToCartButton = card.querySelector('.add-to-cart-btn');
             addToCartButton.addEventListener('click', () => {
                 const selectedItem = allMenuItems.find(menuItem => menuItem.id === parseInt(item.id));
@@ -113,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
             menuItemsGridContainer.appendChild(card);
         });
     }
-    
+
     // Обработчик клика по табу категории
     function handleCategoryClick(categoryId, clickedButton) {
         currentCategoryId = categoryId;
@@ -123,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         clickedButton.classList.add('active');
 
-        if (categoryId === null || categoryId === 'all') { 
+        if (categoryId === null || categoryId === 'all') {
             displayMenuItems(allMenuItems);
         } else {
             const filteredItems = allMenuItems.filter(item => item.category_id === parseInt(categoryId));
@@ -139,16 +150,16 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             cart.push({ menuItem: item, quantity: 1 });
         }
-        renderCart(); 
+        renderCart();
     }
 
     // Функция отображения (рендеринга) корзины
     function renderCart() {
         cartItemsListContainer.innerHTML = ''; 
         let totalAmount = 0;
-
+    
         if (cart.length === 0) {
-            cartItemsListContainer.innerHTML = '<p>Корзина пуста.</p>';
+            cartItemsListContainer.innerHTML = '<p class="empty-cart-message">Корзина пуста. Добавьте что-нибудь вкусненькое!</p>';
             checkoutButton.disabled = true; 
         } else {
             cart.forEach((cartItem, index) => {
@@ -158,31 +169,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 const itemPrice = parseFloat(cartItem.menuItem.price);
                 const itemTotal = itemPrice * cartItem.quantity;
                 totalAmount += itemTotal;
-
-                // Пример с SVG иконкой для удаления
+    
                 listItem.innerHTML = `
-                    <span class="item-name">${cartItem.menuItem.name} (x${cartItem.quantity})</span>
-                    <span class="item-price">${itemTotal.toFixed(2)} руб.</span>
-                    <button class="remove-item-btn" data-cart-item-index="${index}" title="Удалить из корзины">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                            <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
-                        </svg>
-                    </button> 
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${cartItem.menuItem.name} (x${cartItem.quantity})</div>
+                        ${/* Опционально: описание */ '' /* cartItem.menuItem.description ? `<div class="cart-item-description">${cartItem.menuItem.description}</div>` : '' */}
+                    </div>
+                    <div class="cart-item-controls">
+                        <div class="cart-item-price">${itemTotal.toFixed(2)} ₽</div> 
+                        <button class="remove-item-btn" data-cart-item-index="${index}" title="Удалить из корзины">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                             </svg>
+                         </button> 
+                    </div>
                 `;
-                
+
                 listItem.querySelector('.remove-item-btn').addEventListener('click', (event) => {
-                    // Важно: event.currentTarget, если SVG вложен, чтобы получить именно кнопку
                     const itemIndexToRemove = parseInt(event.currentTarget.dataset.cartItemIndex);
                     removeItemFromCart(itemIndexToRemove);
                 });
-
+    
+                // TODO: Навесить обработчики на кнопки +/- количества, если они добавлены в HTML
+                /*
+                if (listItem.querySelector('.quantity-btn.decrease')) {
+                     listItem.querySelector('.quantity-btn.decrease').addEventListener('click', () => decreaseItemQuantity(cartItem.menuItem.id));
+                }
+                if (listItem.querySelector('.quantity-btn.increase')) {
+                     listItem.querySelector('.quantity-btn.increase').addEventListener('click', () => increaseItemQuantity(cartItem.menuItem.id));
+                }
+                */
+    
+    
                 cartItemsListContainer.appendChild(listItem);
             });
             checkoutButton.disabled = false; 
         }
-
+    
         cartTotalAmountElement.textContent = totalAmount.toFixed(2);
+        updateCartIndicator(); // Вызываем функцию обновления индикатора
+    
+    }
+
+    function updateCartIndicator() {
+        const cartCountSpan = document.querySelector('.cart-indicator .cart-count');
+        if (cartCountSpan) {
+            // Считаем общее количество штук в корзине
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCountSpan.textContent = totalItems;
+            // Опционально, скрыть индикатор или показать 0, если корзина пуста
+            // cartCountSpan.style.visibility = totalItems > 0 ? 'visible' : 'hidden';
+        }
     }
 
     // Функция удаления товара из корзины
@@ -190,11 +228,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (itemIndex >= 0 && itemIndex < cart.length) {
             const itemToRemove = cart[itemIndex];
             if (itemToRemove.quantity > 1) {
-                itemToRemove.quantity -= 1; 
+                itemToRemove.quantity -= 1;
             } else {
-                cart.splice(itemIndex, 1); 
+                cart.splice(itemIndex, 1);
             }
-            renderCart(); 
+            renderCart();
         }
     }
 
@@ -204,11 +242,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectedOrderType === 'table') {
             tableNumberGroup.style.display = 'block';
             pickupTimeGroup.style.display = 'none';
-            pickupTimeInput.value = ''; 
+            pickupTimeInput.value = '';
         } else if (selectedOrderType === 'takeaway') {
             tableNumberGroup.style.display = 'none';
             pickupTimeGroup.style.display = 'block';
-            tableNumberInput.value = ''; 
+            tableNumberInput.value = '';
         }
     }
 
@@ -256,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         console.log('Отправка заказа:', orderPayload);
-        
+
         checkoutButton.disabled = true;
         checkoutButtonText.style.display = 'none'; // Скрываем текст
         const spinner = document.createElement('span');
@@ -279,11 +317,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const createdOrder = await response.json();
             console.log('Заказ успешно создан:', createdOrder);
-            
+
             showMessage(`Заказ №${createdOrder.id} успешно оформлен! Сумма: ${parseFloat(createdOrder.total_amount).toFixed(2)} руб.`, 'success');
 
             cart = [];
-            renderCart(); 
+            renderCart();
             tableNumberInput.value = '';
             pickupTimeInput.value = '';
             // Опционально сбросить тип заказа
@@ -294,10 +332,10 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Ошибка при оформлении заказа:', error);
             showMessage(`Произошла ошибка: ${error.message}`, 'error', 7000);
         } finally {
-            checkoutButton.disabled = cart.length === 0; 
-            checkoutButtonText.style.display = 'inline'; 
+            checkoutButton.disabled = cart.length === 0;
+            checkoutButtonText.style.display = 'inline';
             if (checkoutButton.contains(spinner)) {
-                checkoutButton.removeChild(spinner); 
+                checkoutButton.removeChild(spinner);
             }
         }
     });
@@ -305,30 +343,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // Функция для показа сообщений
     function showMessage(message, type = 'success', duration = 5000) {
         let messageContainer = document.getElementById('message-container');
-        if (messageContainer) { 
+        if (messageContainer) {
             messageContainer.remove();
         }
 
         messageContainer = document.createElement('div');
-        messageContainer.id = 'message-container'; 
-        messageContainer.className = `message ${type}`; 
+        messageContainer.id = 'message-container';
+        messageContainer.className = `message ${type}`;
         messageContainer.textContent = message;
-        
+
         document.body.appendChild(messageContainer);
 
         setTimeout(() => {
             if (document.body.contains(messageContainer)) {
-                 document.body.removeChild(messageContainer);
+                document.body.removeChild(messageContainer);
             }
-        }, duration); 
+        }, duration);
     }
 
     // Инициализация
     async function init() {
-        await fetchCategories(); 
-        await fetchMenuItems();  
-        renderCart(); 
-        updateOrderOptionsVisibility(); 
+        await fetchCategories();
+        await fetchMenuItems();
+        renderCart();
+        updateOrderOptionsVisibility();
     }
 
     init();

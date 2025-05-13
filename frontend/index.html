@@ -3,71 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QrFood - Меню</title>
+    <title>BrewLab - Современная кофейня</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 </head>
 <body>
-    <header>
+    <div class="gradient-background"></div>
+    <div class="floating-elements">
+        <div class="floating-element element-1"></div>
+        <div class="floating-element element-2"></div>
+        <div class="floating-element element-3"></div>
+    </div>
+    
+    <header class="animate__animated animate__fadeInDown">
         <div class="container">
-            <h1>QrFood</h1>
-            <!-- Позже здесь может быть логотип -->
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">☕</span>
+                    <h1>BrewLab</h1>
+                </div>
+            </div>
         </div>
     </header>
 
     <main>
         <div class="container">
-            <nav id="category-tabs" class="category-nav">
-                <!-- Категории будут загружены сюда из JS -->
+            <div class="hero animate__animated animate__fadeIn">
+                <div class="hero-content">
+                    <h2>Кофе, который вдохновляет</h2>
+                    <p class="subtitle">Попробуйте наши авторские рецепты</p>
+                    <div class="coffee-beans-animation">
+                        <div class="bean"></div>
+                        <div class="bean"></div>
+                        <div class="bean"></div>
+                    </div>
+                </div>
+            </div>
+
+            <nav id="category-tabs" class="category-nav animate__animated animate__fadeIn animate__delay-1s">
                 <p class="loading-text">Загрузка категорий...</p>
             </nav>
 
             <section id="menu-items-grid" class="menu-grid">
-                <!-- Карточки блюд будут загружены сюда из JS -->
-                <p class="loading-text">Загрузка меню...</p>
+                <article class="menu-item-card">
+                    <div class="card-image-container">
+                        <div class="card-badge">Хит</div>
+                        <img src="https://source.unsplash.com/random/300x200/?coffee" alt="Название напитка" class="menu-item-image">
+                    </div>
+                    <div class="card-content">
+                        <div class="text-content">
+                            <h3 class="item-title">Латте с карамелью</h3>
+                            <p class="item-description">Нежный латте с карамельным сиропом и взбитыми сливками</p>
+                        </div>
+                        <div class="item-footer">
+                            <span class="item-price">320 ₽</span>
+                            <button class="add-to-cart-btn">+</button>
+                        </div>
+                    </div>
+                </article>
             </section>
 
-            <!-- Секция корзины (пока скрыта или очень простая) -->
             <aside id="cart" class="cart-section">
-                <h2>Корзина</h2>
-                <div id="cart-items-list">
-                    <p>Корзина пуста.</p>
+                <div class="cart-header">
+                    <h2>Ваш заказ</h2>
+                    <div class="cart-total">
+                        <strong>Итого: <span id="cart-total-amount">0.00</span> ₽</strong>
+                    </div>
                 </div>
-                <div class="cart-total">
-                    <strong>Итого: <span id="cart-total-amount">0.00</span> руб.</strong>
+                
+                <div id="cart-items-list" class="cart-items">
+                    <p class="empty-cart-message">Корзина пуста. Добавьте что-нибудь вкусненькое!</p>
                 </div>
+                
                 <div id="order-options" class="order-options-section">
                     <h3>Способ получения:</h3>
-                    <div class="form-group">
-                        <label>
-                            <input type="radio" name="orderType" value="table" checked> За столиком
+                    <div class="order-type-selector">
+                        <label class="order-type-option">
+                            <input type="radio" name="orderType" value="table" checked>
+                            <div class="option-content">
+                                <span class="option-icon">🪑</span>
+                                <span class="option-text">За столиком</span>
+                            </div>
                         </label>
-                        <label>
-                            <input type="radio" name="orderType" value="takeaway"> Самовывоз
+                        <label class="order-type-option">
+                            <input type="radio" name="orderType" value="takeaway">
+                            <div class="option-content">
+                                <span class="option-icon">🚶‍♂️</span>
+                                <span class="option-text">Самовывоз</span>
+                            </div>
                         </label>
                     </div>
 
                     <div id="table-number-group" class="form-group">
                         <label for="table-number">Номер столика:</label>
-                        <input type="text" id="table-number" name="tableNumber" placeholder="Например, 5 или 12А">
+                        <input type="text" id="table-number" name="tableNumber" placeholder="Например, 1">
                     </div>
 
-                    <div id="pickup-time-group" class="form-group" style="display: none;"> <!-- Скрыто по умолчанию -->
-                        <label for="pickup-time">Время самовывоза (необязательно):</label>
+                    <div id="pickup-time-group" class="form-group" style="display: none;">
+                        <label for="pickup-time">Время самовывоза:</label>
                         <input type="time" id="pickup-time" name="pickupTime">
                     </div>
                 </div>
+                
                 <button id="checkout-button" class="btn btn-primary" disabled>
                     <span class="btn-text">Оформить заказ</span>
-                    <!-- Спиннер будет добавлен сюда через JS -->
+                    <span class="btn-spinner"></span>
                 </button>
             </aside>
         </div>
     </main>
 
-    <footer>
+    <footer class="animate__animated animate__fadeInUp">
         <div class="container">
-            <p>QrFood</p>
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <span>☕</span>
+                    <span>BrewLab</span>
+                </div>
+                <div class="footer-info">
+                    <p>г. Москва, ул. Кофейная, 15</p>
+                    <p>Ежедневно с 8:00 до 22:00</p>
+                </div>
+                <div class="social-links">
+                    <a href="#" class="social-icon">Instagram</a>
+                    <a href="#" class="social-icon">Telegram</a>
+                    <a href="#" class="social-icon">VK</a>
+                </div>
+            </div>
+            <p class="copyright">© 2025 BrewLab Coffee.</p>
         </div>
     </footer>
 

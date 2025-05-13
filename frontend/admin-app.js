@@ -808,7 +808,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <tr data-order-id="${order.id}">
                             <td>${order.id}</td>
                             <td>${order.order_type === 'table' ? 'За столиком' : 'Самовывоз'}</td>
-                            <td>${order.order_type === 'table' ? (order.table_number || 'N/A') : (order.pickup_time ? new Date(order.pickup_time).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : 'N/A')}</td>
+                            <td>${order.order_type === 'table' ? (order.table_number || 'N/A') : (order.pickup_time ? formatTime(order.pickup_time) : 'N/A')}</td>
                             <td>${parseFloat(order.total_amount).toFixed(2)} руб.</td>
                             <td>
                                 <select class="order-status-select" data-order-id="${order.id}" data-previous-status="${order.status}">
@@ -932,7 +932,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p><strong>ID Заказа:</strong> ${order.id}</p>
                 <p><strong>Тип:</strong> ${order.order_type === 'table' ? 'За столиком' : 'Самовывоз'}</p>
                 ${order.order_type === 'table' ? `<p><strong>Столик:</strong> ${order.table_number || 'N/A'}</p>` : ''}
-                ${order.order_type === 'takeaway' ? `<p><strong>Время самовывоза:</strong> ${order.pickup_time ? new Date(order.pickup_time).toLocaleString('ru-RU', {dateStyle: 'short', timeStyle: 'short'}) : 'N/A'}</p>` : ''}
+                ${order.order_type === 'takeaway' ? 
+                    `<p><strong>Время самовывоза:</strong> ${order.pickup_time ? formatTime(order.pickup_time) : 'N/A'}</p>` 
+                : ''}
                 <p><strong>Статус:</strong> ${order.status}</p>
                 <p><strong>Сумма:</strong> ${parseFloat(order.total_amount).toFixed(2)} руб.</p>
                 <p><strong>Создан:</strong> ${new Date(order.created_at).toLocaleString('ru-RU')}</p>
@@ -955,6 +957,26 @@ document.addEventListener('DOMContentLoaded', () => {
             contentDiv.innerHTML = `<p class="error-text">Ошибка загрузки: ${error.message}</p>`;
             showAdminMessage(`Ошибка загрузки деталей заказа: ${error.message}`, 'error');
             closeModal('order-details-modal'); // Закрываем модалку при ошибке
+        }
+    }
+
+    function formatTime(timeString) {
+        if (!timeString) return 'N/A';
+        // Проверяем, соответствует ли строка формату HH:MM
+        const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+        if (timeRegex.test(timeString)) {
+            return timeString; // Просто возвращаем строку, если она в нужном формате
+        } else {
+            // Если формат другой (например, придет ISO), попробуем распарсить как дату
+            try {
+                const date = new Date(timeString);
+                if (!isNaN(date.getTime())) { // Проверяем, что дата валидна
+                     return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+                }
+            } catch (e) {
+                console.error("Не удалось распарсить или отформатировать время:", timeString, e);
+            }
+             return timeString; // Возвращаем оригинальную строку или 'Некорректный формат времени'
         }
     }
 
