@@ -1,8 +1,8 @@
 /* Основные стили */
 :root {
-    --primary-color: #6F4E37; /* Кофейный */
-    --secondary-color: #C4A484; /* Бежевый */
-    --accent-color: #E3B04B; /* Золотистый */
+    --primary-color: #8292EA; 
+    --secondary-color: #EA8292;
+    --accent-color: #EA8292; 
     --dark-color: #2D2424;
     --light-color: #F9F5F0;
     --success-color: #5CB85C;
@@ -20,14 +20,14 @@
 body {
     font-family: 'Poppins', sans-serif;
     margin: 0;
-    background-color: var(--light-color);
+    background-color: white;
     color: var(--text-color);
     line-height: 1.6;
     overflow-x: hidden;
     position: relative;
 }
 
-.gradient-background {
+/*.gradient-background {
     position: fixed;
     top: 0;
     left: 0;
@@ -35,7 +35,7 @@ body {
     height: 100%;
     background: linear-gradient(135deg, #f9f5f0 0%, #e8e0d8 100%);
     z-index: -2;
-}
+}*/
 
 .floating-elements {
     position: fixed;
@@ -50,8 +50,8 @@ body {
 .floating-element {
     position: absolute;
     border-radius: 50%;
-    background: rgba(227, 176, 75, 0.1);
-    filter: blur(30px);
+    background: #8292EA;
+    filter: blur(200px);
 }
 
 .element-1 {
@@ -116,19 +116,56 @@ header {
 
 .header-content {
     display: flex;
-    justify-content: space-between;
     align-items: center;
 }
+
+.brand-identity {
+    display: flex; 
+    align-items: center;
+    gap: 12px; 
+    margin: 0 auto; 
+}
+
+
+.header-content .logo {
+     /* Позиционируем центральный элемент абсолютно */
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    /* Убедимся, что не перекрывает другие элементы, возможно, нужен z-index */
+    z-index: 1;
+    /* text-align: center; */ /* Текст внутри будет центрирован, но контейнер уже центрирован */
+}
+.header-content .left-placeholder { 
+    /* display: flex; align-items: center; */ /* Если слева что-то будет (например, кнопка меню) */
+    /* width: <ширина элемента справа>; /* Чтобы центральный элемент был симметрично центрирован */
+    width: 60px; /* Примерная ширина логотипа справа */
+    visibility: hidden; /* Скрываем, но место занимает */
+    /* Если нет левого элемента, просто удали .left-placeholder из HTML и это правило */
+}
+
+.brand-logo {
+    height: 40px; /* Или нужный размер */
+    display: block; /* Убираем нижний отступ, который может быть у img */
+}
+
 
 .logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
 }
-
 .logo-icon {
     font-size: 1.8rem;
     animation: pulse 2s infinite;
+}
+
+.header-logo {
+    padding-right: 200px;
+    display: flex; /* Чтобы выровнять картинку */
+    align-items: center; /* Выравниваем по вертикали по центру */
+}
+
+.brand-logo {
+    height: 40px; 
+    display: block; 
 }
 
 @keyframes pulse {
@@ -276,7 +313,7 @@ header h1 {
 }
 
 .category-tab:hover {
-    background-color: var(--secondary-color);
+    background-color: #8292EA;
     color: white;
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
@@ -285,7 +322,7 @@ header h1 {
 .category-tab.active {
     background-color: var(--primary-color);
     color: white;
-    box-shadow: 0 4px 12px rgba(111, 78, 55, 0.25);
+    box-shadow: 0 4px 12px #9eaaee;
     font-weight: 600;
 }
 
@@ -344,20 +381,26 @@ header h1 {
 }
 
 .card-content {
-    padding: 20px;
     display: flex;
-    flex-direction: column;
-    flex-grow: 1;
+     flex-direction: column;
+     flex-grow: 1;
+     padding: 20px;
 }
 
 .text-content {
     flex-grow: 1;
-    margin-bottom: 20px; /* Отступ между текстом и футером */
+    margin-bottom: 10px; /* Отступ между текстом и футером */
     padding: 0 20px;
+}
+
+.card-content .text-content {
+    flex-grow: 1; /* Растягиваем текст */
+    /* margin-bottom: auto;  <- Этот приём тоже может работать, попробуй если предыдущий не помогает */
 }
 
 .item-title {
     margin: 0 0 8px;
+    padding-top: 20px;
     font-size: 1.25rem;
     color: var(--dark-color);
     font-weight: 600;
@@ -387,7 +430,7 @@ header h1 {
 }
 
 .add-to-cart-btn {
-    background-color: var(--accent-color);
+    background-color: #8292EA;
     color: white;
     border: none;
     border-radius: 12px;
@@ -399,13 +442,14 @@ header h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 8px rgba(227, 176, 75, 0.3);
+    box-shadow: 0 4px 8px #9eaaee;
 }
 
 .add-to-cart-btn:hover {
-    background-color: var(--primary-color);
+    background-color: white;
+    color: #8292EA;
     transform: scale(1.1);
-    box-shadow: 0 6px 12px rgba(111, 78, 55, 0.3);
+    box-shadow: 0 6px 12px #9eaaee;
 }
 
 /* Корзина */
@@ -595,8 +639,8 @@ header h1 {
 }
 
 .order-type-option input:checked + .option-content {
-    border-color: var(--accent-color);
-    background-color: rgba(227, 176, 75, 0.05);
+    border-color: #8292EA;
+    background-color: #F8F9FE;
 }
 
 .option-icon {
@@ -635,7 +679,7 @@ header h1 {
 .form-group input[type="text"]:focus,
 .form-group input[type="time"]:focus {
     border-color: var(--accent-color);
-    box-shadow: 0 0 0 3px rgba(227, 176, 75, 0.2);
+    box-shadow: 0 0 0 3px #dbabb2;
     outline: none;
 }
 
@@ -659,14 +703,15 @@ header h1 {
     width: 100%;
     padding: 16px;
     font-size: 1.1rem;
-    box-shadow: 0 4px 12px rgba(227, 176, 75, 0.3);
+    box-shadow: 0 4px 12px #dbabb2;
     margin-top: 20px;
 }
 
 .btn-primary:hover {
-    background-color: var(--primary-color);
+    background-color: white;
+    color: #dbabb2;
     transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(111, 78, 55, 0.3);
+    box-shadow: 0 8px 16px #dbabb2;
 }
 
 .btn-primary:disabled {
@@ -704,7 +749,7 @@ header h1 {
 
 /* Подвал */
 footer {
-    background: var(--dark-color);
+    background: #8292EA;
     color: white;
     padding: 3rem 0 2rem;
     margin-top: 4rem;
@@ -813,6 +858,18 @@ footer {
 }
 
 @media (max-width: 480px) {
+
+    header h1 {
+        font-size: 1.5rem; /* Уменьшаем шрифт на мобильных */
+    }
+    .brand-logo {
+         height: 30px; /* Уменьшаем картинку */
+    }
+    /* Возможно, нужно будет скорректировать позиционирование .logo на маленьких экранах */
+    .header-content .logo {
+         transform: translateX(-50%); /* Пересчитываем центр */
+    }
+
     .category-nav {
         gap: 8px;
     }
