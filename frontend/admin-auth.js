@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const passwordInput = document.getElementById('password');
     const loginMessage = document.getElementById('login-message');
 
-    const API_BASE_URL = 'http://localhost:3001/api'; // Убедись, что URL верный
+    const API_BASE_URL = 'https://qrfood-backend.onrender.com/api'; // Убедись, что URL верный
 
     // Проверяем, не залогинен ли уже пользователь
     if (localStorage.getItem('authToken')) {
