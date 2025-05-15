@@ -16,15 +16,17 @@ module.exports = {
     }
   },
 
-  // Можно добавить конфигурации для других окружений (testing, production) позже
-  // production: {
-  //   client: 'pg', // Например, PostgreSQL для продакшена
-  //   connection: process.env.DATABASE_URL, // URL подключения к БД из переменных окружения
-  //   migrations: {
-  //     directory: './data/migrations'
-  //   },
-  //   seeds: {
-  //     directory: './data/seeds'
-  //   }
-  // }
+  production: { // <--- ДОБАВИМ ЭТУ СЕКЦИЮ
+    client: 'sqlite3',
+    connection: {
+      filename: process.env.DB_FILENAME || './data/qrfood_prod.db3' 
+    },
+    useNullAsDefault: true,
+    migrations: {
+      directory: './data/migrations'
+    },
+    seeds: {
+      directory: './data/seeds'
+    },
+  }
 };
