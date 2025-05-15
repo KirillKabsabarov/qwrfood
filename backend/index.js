@@ -9,7 +9,7 @@ const orderRoutes = require('./routes/orderRoutes');
 const tableRoutes = require('./routes/tableRoutes');
 
 const whitelist = [
-    'https://qrfood-client.netlify.app', // ЗАМЕНИ НА РЕАЛЬНЫЙ URL ТВОЕГО ФРОНТЕНДА С NETLIFY
+    'https://qr-food-client.netlify.app', // ЗАМЕНИ НА РЕАЛЬНЫЙ URL ТВОЕГО ФРОНТЕНДА С NETLIFY
     'http://localhost:5500', // Если используешь Live Server локально (порт может отличаться)
     'http://127.0.0.1:5500'  // Альтернативный адрес Live Server
 ];
