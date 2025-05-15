@@ -11,6 +11,7 @@ router.get('/', async (req, res) => {
     const categories = await Categories.findAll();
     res.status(200).json(categories);
   } catch (error) {
+    console.error("Ошибка в GET /api/categories:", error); // Добавь логирование на сервере
     res.status(500).json({ message: 'Ошибка при получении категорий', error: error.message });
   }
 });
