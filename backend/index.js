@@ -38,11 +38,12 @@ app.use(express.json()); // Позволяем Express разбирать JSON �
 
 
 // Подключаем роуты
-app.use('/api/auth', authRoutes); 
-app.use('/api/categories', categoryRoutes);
-app.use('/api/menu', menuItemRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/tables', tableRoutes);
+// Подключаем роуты
+// app.use('/api/auth', authRoutes); 
+// app.use('/api/categories', categoryRoutes);
+// app.use('/api/menu', menuItemRoutes);
+// app.use('/api/orders', orderRoutes);
+// app.use('/api/tables', tableRoutes);
 
 // Простой тестовый маршрут
 app.get('/', (req, res) => {
