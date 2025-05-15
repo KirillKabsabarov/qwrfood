@@ -4,7 +4,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "migrate": "npx knex migrate:latest",
+    "seed": "npx knex seed:run",
+    "deploy-migrate-seed": "npm run migrate && npm run seed"
   },
   "keywords": [],
   "author": "",
