@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentSectionTitleElement = document.getElementById('current-section-title');
 
     //const API_BASE_URL_ADMIN = 'http://localhost:3001/api';
+    const API_BASE_URL_ADMIN = 'https://qrfood-backend.onrender.com/api';
     const API_BASE_URL = 'https://qrfood-backend.onrender.com/api';
     // --- Переменная для отслеживания текущего активного раздела ---
     let currentActiveSectionId = null; // Инициализируем как null
