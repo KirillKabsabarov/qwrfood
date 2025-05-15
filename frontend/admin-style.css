@@ -215,7 +215,7 @@ body {
 }
 
 .content-section.active-section {
-    display: block; /* Показываем только активную секцию */
+    display: block !important;
 }
 
 .content-section h4 {

@@ -1,5 +1,7 @@
 // frontend/admin-app.js
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOMContentLoaded: Admin app started."); // Лог начала
+
     // --- Авторизация и Инициализация ---
     const authToken = localStorage.getItem('authToken');
     const authUserString = localStorage.getItem('authUser');
@@ -20,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (!authToken || !authUser) {
-        console.warn("Токен или данные пользователя отсутствуют. Перенаправление на страницу входа.");
+        console.warn("Токен или данные пользователя отсутствуют. Перенаправление на страницу входа."); // Лог
         window.location.href = 'admin-login.html';
         return; // Прекращаем выполнение скрипта
     }
@@ -30,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (adminUsernameElement && authUser.username) {
         adminUsernameElement.textContent = authUser.username;
     } else {
-        console.warn("Элемент для имени пользователя не найден или данные пользователя неполны.");
+        console.warn("Элемент для имени пользователя не найден или данные пользователя неполны."); // Лог
     }
 
 
@@ -40,67 +42,79 @@ document.addEventListener('DOMContentLoaded', () => {
     const contentSections = document.querySelectorAll('.content-section');
     const currentSectionTitleElement = document.getElementById('current-section-title');
 
-    const API_BASE_URL_ADMIN = 'http://localhost:3001/api'; // URL бэкенда
+    const API_BASE_URL_ADMIN = 'http://localhost:3001/api';
+
+    // --- Переменная для отслеживания текущего активного раздела ---
+    let currentActiveSectionId = null; // Инициализируем как null
 
 
     // --- Функция для принудительного обновления UI текущего раздела ---
     // Принимает sectionId для явного указания, какой раздел активировать
-    function updateCurrentSectionUI(sectionId) {
-        const targetContentId = `${sectionId}-content`;
+    function updateCurrentSectionUI(sectionIdToActivate) {
+        if (!sectionIdToActivate) {
+            console.error("updateCurrentSectionUI called without a sectionId."); // Лог ошибки
+            return;
+        }
+        const targetContentId = `${sectionIdToActivate}-content`;
         const targetSection = document.getElementById(targetContentId);
-        const targetNavLink = document.querySelector(`.sidebar-nav a[data-section="${sectionId}"]`); // Находим соответствующую ссылку
+        const targetNavLink = document.querySelector(`.sidebar-nav a[data-section="${sectionIdToActivate}"]`);
 
-        if (targetSection) {
-            // 1. Управление видимостью секций контента
-            contentSections.forEach(section => {
-                if (section.id === targetContentId) {
-                    section.classList.add('active-section');
-                } else {
-                    section.classList.remove('active-section');
-                }
-            });
+        if (!targetSection) {
+            console.error(`updateCurrentSectionUI: Content element for section #${targetContentId} not found.`); // Лог ошибки
+            return; // Не можем активировать несуществующий раздел
+        }
 
-            // 2. Управление активным состоянием ссылок
-            navLinks.forEach(navLink => navLink.classList.remove('active'));
-            if (targetNavLink) {
-                targetNavLink.classList.add('active');
-                 // 3. Обновление заголовка секции на основе текста активной ссылки
-                currentSectionTitleElement.textContent = targetNavLink.textContent;
+        console.log(`updateCurrentSectionUI: Активация UI для раздела: ${sectionIdToActivate}`); // Лог
+
+        // 1. Управление видимостью секций контента
+        contentSections.forEach(section => {
+            if (section.id === targetContentId) {
+                section.classList.add('active-section');
+                // Явно устанавливаем display: block, чтобы перекрыть возможные стили
+                section.style.display = 'block'; // <<< ЯВНОЕ УПРАВЛЕНИЕ ВИДИМОСТЬЮ
             } else {
-                console.warn(`Навигационная ссылка для раздела ${sectionId} не найдена при обновлении UI.`);
-                 // Fallback для заголовка
-                currentSectionTitleElement.textContent = `${sectionId.replace('-', ' ').replace('management', 'Управление').replace('overview', 'Обзор')} (Не найдена ссылка)`;
+                section.classList.remove('active-section');
+                // Явно устанавливаем display: none
+                section.style.display = 'none'; // <<< ЯВНОЕ УПРАВЛЕНИЕ ВИДИМОСТЬЮ
             }
+        });
 
+        // 2. Управление активным состоянием ссылок
+        navLinks.forEach(navLink => navLink.classList.remove('active'));
+        if (targetNavLink) {
+            targetNavLink.classList.add('active');
+            // 3. Обновление заголовка секции на основе текста активной ссылки
+            currentSectionTitleElement.textContent = targetNavLink.textContent;
         } else {
-            console.error(`Элемент контента для раздела #${targetContentId} не найден при обновлении UI.`);
-             // Если целевой элемент секции не найден, что-то пошло не так.
-             // Возможно, как крайний случай, активировать первый доступный раздел?
-             // findAndActivateFirstSection(); // Может быть добавлено как fallback
+            console.warn(`updateCurrentSectionUI: Навигационная ссылка для раздела ${sectionIdToActivate} не найдена.`); // Лог
+            // Fallback для заголовка
+            currentSectionTitleElement.textContent = `${sectionIdToActivate.replace('-', ' ').replace('management', 'Управление').replace('overview', 'Обзор')} (Нет ссылки)`;
         }
     }
 
     // --- Вспомогательная функция для поиска и активации первого раздела ---
-     function findAndActivateFirstSection() {
+    function findAndActivateFirstSection() {
         const firstLink = document.querySelector('.sidebar-nav a');
         if (firstLink) {
-             // Имитируем клик через requestAnimationFrame для правильной отрисовки
-             requestAnimationFrame(() => {
-                  if (firstLink) { // Проверка на случай удаления элемента за время RAF
-                       firstLink.click();
-                  }
-             });
+            console.log("findAndActivateFirstSection: Активация первого раздела при загрузке."); // Лог
+            // Имитируем клик через requestAnimationFrame для правильной отрисовки
+            requestAnimationFrame(() => {
+                if (firstLink) { // Проверка на случай удаления элемента за время RAF
+                    firstLink.click(); // Этот клик вызовет обработчик навигации ниже
+                }
+            });
         } else {
-             console.error("Нет навигационных ссылок в сайдбаре для активации.");
-             // Возможно, показать сообщение об ошибке пользователю
+            console.error("findAndActivateFirstSection: Нет навигационных ссылок в сайдбаре для активации."); // Лог ошибки
+            // Возможно, показать сообщение об ошибке пользователю
         }
-     }
+    }
 
 
     // --- Обработчики основных событий ---
 
     // Обработчик выхода
     logoutButton.addEventListener('click', () => {
+        console.log("Logout button clicked."); // Лог
         localStorage.removeItem('authToken');
         localStorage.removeItem('authUser');
         window.location.href = 'admin-login.html';
@@ -108,55 +122,75 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Обработчик навигации по разделам
     navLinks.forEach(link => {
-        link.addEventListener('click', async (event) => { // Сделаем async, т.к. загрузка контента асинхронная
+        link.addEventListener('click', async (event) => {
             event.preventDefault();
 
-            const sectionId = link.dataset.section; // 'menu-management', 'orders-management', etc.
-            const targetContentId = `${sectionId}-content`;
-            const targetSectionElement = document.getElementById(targetContentId);
+            const sectionId = link.dataset.section;
+            const targetContentElement = document.getElementById(`${sectionId}-content`);
 
+            console.log(`Nav click: Переход к разделу: ${sectionId}`); // Лог
 
-            // === Управление активным состоянием ссылок и видимостью секций ===
-            // Вызываем обновление UI сразу после клика по ссылке
-             updateCurrentSectionUI(sectionId); // <--- Передаем sectionId
+            // === 1. Устанавливаем текущий активный раздел и обновляем UI немедленно ===
+            currentActiveSectionId = sectionId; // <<< УСТАНАВЛИВАЕМ ПЕРЕМЕННУЮ
+            updateCurrentSectionUI(sectionId); // <<< ОБНОВЛЯЕМ UI СРАЗУ
 
-            // Загрузка контента для секции при первом переходе или при необходимости обновления
-            if (targetSectionElement && targetSectionElement.classList.contains('active-section')) {
+            // === 2. Загрузка/обновление контента для секции ===
+            // Проверяем, загружена ли уже структура раздела с помощью data-атрибута
+            const sectionContentLoaded = targetContentElement && targetContentElement.dataset.loaded === 'true';
+
+            try {
                 if (sectionId === 'menu-management') {
-                    // Проверяем наличие ключевых элементов раздела, чтобы понять, загружать структуру или только данные
-                    if (!document.getElementById('categories-list') || !document.getElementById('menu-items-list')) {
-                         await loadMenuManagementContent(); // Загрузка полной структуры и данных
+                    if (!sectionContentLoaded) {
+                        console.log("Nav click: Загрузка структуры и данных для Управления меню."); // Лог
+                        await loadMenuManagementContent(); // Эта функция сгенерирует структуру и вызовет fetchAndDisplay
+                        if (targetContentElement) targetContentElement.dataset.loaded = 'true'; // Устанавливаем флаг
                     } else {
-                         await fetchAndDisplayAdminCategories(); // Просто обновляем списки
-                         await fetchAndDisplayAdminMenuItems();
-                         await populateCategoryDropdown(); // Обновляем дропдаун на всякий случай
+                        console.log("Nav click: Структура Управления меню уже загружена, обновляем данные."); // Лог
+                        // Структура уже есть, просто обновляем данные
+                        // fetchAndDisplay вызовет updateCurrentSectionUI в конце
+                        await fetchAndDisplayAdminCategories();
+                        await fetchAndDisplayAdminMenuItems();
+                        await populateCategoryDropdown(); // Обновляем дропдаун на всякий случай
                     }
                 } else if (sectionId === 'orders-management') {
-                    if (!document.getElementById('orders-list')) {
-                        await loadOrdersManagementContent();
+                    if (!sectionContentLoaded) {
+                        console.log("Nav click: Загрузка структуры и данных для Заказов."); // Лог
+                        await loadOrdersManagementContent(); // Эта функция сгенерирует структуру и вызовет fetchAndDisplay
+                        if (targetContentElement) targetContentElement.dataset.loaded = 'true'; // Устанавливаем флаг
                     } else {
-                         await fetchAndDisplayAdminOrders(); // Просто обновляем список
+                        console.log("Nav click: Структура Заказов уже загружена, обновляем данные."); // Лог
+                        // fetchAndDisplay вызовет updateCurrentSectionUI в конце
+                        await fetchAndDisplayAdminOrders({}); // При переходе просто обновляем все заказы
                     }
                 } else if (sectionId === 'tables-management') {
-                    if (!document.getElementById('tables-grid-display')) {
-                        await loadTablesManagementContent();
+                    if (!sectionContentLoaded) {
+                        console.log("Nav click: Загрузка структуры и данных для Столиков."); // Лог
+                        await loadTablesManagementContent(); // Эта функция сгенерирует структуру и вызовет fetchAndDisplay
+                        if (targetContentElement) targetContentElement.dataset.loaded = 'true'; // Устанавливаем флаг
                     } else {
-                        await fetchAndDisplayAdminTables(); // Просто обновляем список
+                        console.log("Nav click: Структура Столиков уже загружена, обновляем данные."); // Лог
+                        // fetchAndDisplay вызовет updateCurrentSectionUI в конце
+                        await fetchAndDisplayAdminTables();
                     }
                 }
-                 // Раздел "Обзор" удален, его логика больше не нужна
+                // Добавить другие разделы по аналогии
+                // Раздел "Обзор" удален, его логика больше не нужна
 
-                 // После загрузки/отображения контента, принудительно восстанавливаем состояние активности
-                 // Это может помочь, если какие-то асинхронные операции или отрисовка сбивают состояние
-                 // Вызываем updateCurrentSectionUI снова, чтобы быть уверенным, что состояние сохранено
-                 requestAnimationFrame(() => updateCurrentSectionUI(sectionId)); // <--- Вызов здесь, передаем sectionId
+            } catch (error) {
+                console.error(`Nav click: Ошибка при загрузке контента для раздела ${sectionId}:`, error); // Лог ошибки
+                showAdminMessage(`Не удалось загрузить контент для раздела "${link.textContent}": ${error.message}`, 'error');
+                // Даже при ошибке загрузки данных, пытаемся восстановить видимость раздела
+                updateCurrentSectionUI(currentActiveSectionId); // ВОССТАНОВЛЕНИЕ UI
             }
+
+            console.log(`Nav click: Обработчик клика для ${sectionId} завершен.`); // Лог
         });
     });
 
 
     // --- Глобальная функция для закрытия модальных окон ---
     window.closeModal = function (modalId) {
+        console.log(`Closing modal: ${modalId}`); // Лог
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.style.display = 'none';
@@ -164,16 +198,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (form) {
                 form.reset();
             }
-             // Используем ID группы
+            // Используем ID группы для формы столика
             if (modalId === 'table-modal') {
-                 const statusSelectGroup = document.getElementById('table-status-group-modal');
-                 if (statusSelectGroup) statusSelectGroup.style.display = 'block'; // Показываем обратно для нового столика
+                const statusSelectGroup = document.getElementById('table-status-group-modal');
+                // Показываем поле статуса обратно при закрытии, чтобы оно было видно при добавлении нового столика
+                if (statusSelectGroup) statusSelectGroup.style.display = 'block';
             }
         }
     }
 
     // --- Функция для показа сообщений в админке ---
     function showAdminMessage(message, type = 'success', duration = 5000) {
+        console.log(`Showing admin message (${type}): ${message}`); // Лог
         let messageContainer = document.getElementById('admin-message-container');
         if (messageContainer) {
             messageContainer.remove();
@@ -187,14 +223,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const mainContent = document.querySelector('.main-content');
         const mainHeader = document.querySelector('.main-header');
         if (mainContent && mainHeader) {
+            // Вставляем после заголовка
             mainContent.insertBefore(messageContainer, mainHeader.nextSibling);
         } else if (mainContent) {
+            // Вставляем в начало контента
             mainContent.insertBefore(messageContainer, mainContent.firstChild);
         } else {
+            // Вставляем в конец body как запасной вариант
             document.body.appendChild(messageContainer);
         }
 
-        setTimeout(() => { messageContainer.style.opacity = '1'; }, 50);
+        // Маленькая задержка для анимации opacity
+        requestAnimationFrame(() => {
+            messageContainer.style.opacity = '1';
+        });
+
 
         setTimeout(() => {
             if (messageContainer.parentNode) {
@@ -211,20 +254,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- УПРАВЛЕНИЕ МЕНЮ ---
+    // loadMenuManagementContent теперь только генерирует структуру при первом вызове
     async function loadMenuManagementContent() {
-         const menuManagementSection = document.getElementById('menu-management-content');
-         if (!menuManagementSection) return;
+        const menuManagementSection = document.getElementById('menu-management-content');
+        if (!menuManagementSection || menuManagementSection.dataset.loaded === 'true') {
+            console.log("loadMenuManagementContent: Structure already loaded or element not found."); // Лог
+            return; // Если уже загружено или элемента нет, ничего не делаем
+        }
 
-         // Проверяем, загружена ли уже структура по наличию ключевых элементов
-         if (document.getElementById('categories-list') && document.getElementById('menu-items-list')) {
-             // Структура уже есть, просто обновляем данные
-             await fetchAndDisplayAdminCategories();
-             await fetchAndDisplayAdminMenuItems();
-             await populateCategoryDropdown();
-             return;
-         }
-
-        // Генерируем структуру раздела, если ее нет
+        console.log("loadMenuManagementContent: Generating structure..."); // Лог
+        // Генерируем структуру раздела
         menuManagementSection.innerHTML = `
             <h4>Управление категориями</h4>
             <div class="admin-button-bar">
@@ -286,33 +325,38 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
-        // Загружаем и отображаем данные после создания структуры
-        await fetchAndDisplayAdminCategories();
-        await fetchAndDisplayAdminMenuItems();
-        await populateCategoryDropdown();
+        menuManagementSection.dataset.loaded = 'true'; // Устанавливаем флаг после создания структуры
 
-        // Навешиваем обработчики на кнопки "Добавить" (они теперь существуют)
+        // Навешиваем обработчики на кнопки "Добавить" и формы (они теперь существуют)
         document.getElementById('add-category-btn').addEventListener('click', () => openCategoryModal());
         document.getElementById('add-menu-item-btn').addEventListener('click', () => openMenuItemModal());
-
-        // Обработчики для форм в модальных окнах (они теперь существуют)
         document.getElementById('category-form').addEventListener('submit', handleCategoryFormSubmit);
         document.getElementById('menu-item-form').addEventListener('submit', handleMenuItemFormSubmit);
+
+        // Теперь загружаем и отображаем данные после создания структуры
+        await fetchAndDisplayAdminCategories(); // fetchAndDisplay... вызовет updateCurrentSectionUI в конце
+        await fetchAndDisplayAdminMenuItems(); // fetchAndDisplay... вызовет updateCurrentSectionUI в конце
+        await populateCategoryDropdown(); // Просто загрузка данных в дропдаун, не влияет на UI секций
+
+        console.log("loadMenuManagementContent: Structure and initial data loaded."); // Лог
     }
 
 
     async function fetchAndDisplayAdminCategories() {
         const categoriesListDiv = document.getElementById('categories-list');
         if (!categoriesListDiv) {
-             // Если контейнера нет, возможно, мы не в этом разделе
-             // console.warn("Контейнер #categories-list не найден.");
-             return;
+            console.warn("fetchAndDisplayAdminCategories: Контейнер #categories-list не найден."); // Лог
+            return;
         }
-        categoriesListDiv.innerHTML = '<p>Загрузка категорий...</p>';
+        console.log("fetchAndDisplayAdminCategories: Загрузка и отображение категорий..."); // Лог
+        categoriesListDiv.innerHTML = '<p>Загрузка категорий...</p>'; // Показываем индикатор загрузки
 
         try {
             const response = await fetch(`${API_BASE_URL_ADMIN}/categories`);
-            if (!response.ok) throw new Error('Ошибка загрузки категорий');
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({ message: 'Ошибка загрузки категорий' }));
+                throw new Error(errData.message || `Ошибка сервера: ${response.status}`);
+            }
             const categories = await response.json();
 
             if (categories.length === 0) {
@@ -353,15 +397,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
+            console.log("fetchAndDisplayAdminCategories: Успех. Повторно применяем активное состояние UI."); // Лог
+            // --- В КОНЦЕ УСПЕШНОГО ОТОБРАЖЕНИЯ ДАННЫХ ---
+            // Используем RAF, чтобы убедиться, что DOM обновился после innerHTML
+            requestAnimationFrame(() => {
+                if (currentActiveSectionId) { // Проверяем, установлен ли раздел
+                    updateCurrentSectionUI(currentActiveSectionId); // <<< ЯВНО ВОССТАНАВЛИВАЕМ UI
+                }
+            });
 
         } catch (error) {
-            console.error("Ошибка при загрузке категорий в админке:", error);
+            console.error("fetchAndDisplayAdminCategories: Ошибка при загрузке категорий:", error); // Лог ошибки
             categoriesListDiv.innerHTML = `<p class="error-text">Ошибка: ${error.message}</p>`;
             showAdminMessage(`Ошибка загрузки категорий: ${error.message}`, 'error');
+
+            // --- ВОССТАНАВЛИВАЕМ UI ДАЖЕ ПРИ ОШИБКЕ ЗАГРУЗКИ ДАННЫХ ---
+            requestAnimationFrame(() => {
+                if (currentActiveSectionId) {
+                    updateCurrentSectionUI(currentActiveSectionId); // <<< ЯВНО ВОССТАНАВЛИВАЕМ UI
+                }
+            });
         }
     }
 
     function openCategoryModal(id = null, name = '') {
+        console.log(`openCategoryModal: ID=${id}`); // Лог
         const modal = document.getElementById('category-modal');
         const title = document.getElementById('category-modal-title');
         const form = document.getElementById('category-form');
@@ -380,6 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const formButton = event.submitter;
 
         formButton.disabled = true;
+        console.log(`handleCategoryFormSubmit: Отправка формы (${id ? 'Ред' : 'Доб'}).`); // Лог
 
         if (!name) {
             showAdminMessage('Название категории не может быть пустым.', 'error');
@@ -407,30 +468,34 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             closeModal('category-modal');
-            await fetchAndDisplayAdminCategories(); // Обновляем список КАТЕГОРИЙ
-            await populateCategoryDropdown();      // Обновляем ДРОПДАУН КАТЕГОРИЙ (т.к. категории изменились)
             showAdminMessage(id ? 'Категория успешно обновлена!' : 'Категория успешно добавлена!', 'success');
 
-             // Найдем активную ссылку, чтобы получить sectionId
-             const activeLink = document.querySelector('.sidebar-nav a.active');
-             if(activeLink) {
-                 const currentSectionId = activeLink.dataset.section;
-                 // Принудительно обновляем UI текущего раздела после успешного действия
-                 requestAnimationFrame(() => updateCurrentSectionUI(currentSectionId));
-             } else {
-                 console.warn("Нет активной ссылки после сохранения категории. Не удалось обновить UI.");
-             }
+            // --- ОБНОВЛЯЕМ ДАННЫЕ ПОСЛЕ УСПЕХА ---
+            // fetchAndDisplayAdminCategories в конце вызовет updateCurrentSectionUI(currentActiveSectionId)
+            await fetchAndDisplayAdminCategories();
+            await populateCategoryDropdown(); // Обновляем дропдаун, т.к. категории изменились
 
+            console.log("handleCategoryFormSubmit: Успех."); // Лог
 
         } catch (error) {
-            console.error("Ошибка сохранения категории:", error);
+            console.error("handleCategoryFormSubmit: Ошибка сохранения категории:", error); // Лог ошибки
             showAdminMessage(`Ошибка: ${error.message}`, 'error');
+            // При ошибке, обновляем данные (если возможно) и восстанавливаем UI
+            requestAnimationFrame(() => {
+                if (currentActiveSectionId) {
+                    // Можно попробовать обновить данные, чтобы показать актуальное состояние (если ошибка не в fetch)
+                    // fetchAndDisplayAdminCategories(); // Или вызвать только updateCurrentSectionUI
+                    updateCurrentSectionUI(currentActiveSectionId);
+                }
+            });
+
         } finally {
             formButton.disabled = false;
         }
     }
 
     async function deleteCategory(id) {
+        console.log(`deleteCategory: ID=${id}`); // Лог
         if (!confirm('Вы уверены, что хотите удалить эту категорию? Это также удалит все связанные с ней блюда!')) return;
 
         try {
@@ -445,23 +510,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(responseData.message || `Ошибка сервера: ${response.status}`);
             }
 
-            await fetchAndDisplayAdminCategories(); // Обновляем список КАТЕГОРИЙ
-            await populateCategoryDropdown();      // Обновляем ДРОПДАУН КАТЕГОРИЙ (т.к. категории изменились)
             showAdminMessage('Категория успешно удалена!', 'success');
 
-             // Найдем активную ссылку, чтобы получить sectionId
-             const activeLink = document.querySelector('.sidebar-nav a.active');
-             if(activeLink) {
-                 const currentSectionId = activeLink.dataset.section;
-                 // Принудительно обновляем UI текущего раздела после успешного действия
-                 requestAnimationFrame(() => updateCurrentSectionUI(currentSectionId));
-             } else {
-                 console.warn("Нет активной ссылки после удаления категории. Не удалось обновить UI.");
-             }
+            // --- ОБНОВЛЯЕМ ДАННЫЕ ПОСЛЕ УСПЕХА ---
+            // fetchAndDisplayAdminCategories в конце вызовет updateCurrentSectionUI(currentActiveSectionId)
+            await fetchAndDisplayAdminCategories();
+            await populateCategoryDropdown(); // Обновляем дропдаун, т.к. категории изменились
+
+            console.log("deleteCategory: Успех."); // Лог
 
         } catch (error) {
-            console.error("Ошибка удаления категории:", error);
+            console.error("deleteCategory: Ошибка удаления категории:", error); // Лог ошибки
             showAdminMessage(`Ошибка: ${error.message}`, 'error');
+            // При ошибке, обновляем данные (если возможно) и восстанавливаем UI
+            requestAnimationFrame(() => {
+                if (currentActiveSectionId) {
+                    // fetchAndDisplayAdminCategories(); // Можно попробовать обновить данные
+                    updateCurrentSectionUI(currentActiveSectionId);
+                }
+            });
         }
     }
 
@@ -470,16 +537,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchAndDisplayAdminMenuItems() {
         const menuItemsListDiv = document.getElementById('menu-items-list');
-         if (!menuItemsListDiv) {
-             // Если контейнера нет, возможно, мы не в этом разделе
-             // console.warn("Контейнер #menu-items-list не найден.");
-             return;
-         }
-        menuItemsListDiv.innerHTML = '<p>Загрузка позиций меню...</p>';
+        if (!menuItemsListDiv) {
+            console.warn("fetchAndDisplayAdminMenuItems: Контейнер #menu-items-list не найден."); // Лог
+            return;
+        }
+        console.log("fetchAndDisplayAdminMenuItems: Загрузка и отображение позиций меню..."); // Лог
+        menuItemsListDiv.innerHTML = '<p>Загрузка позиций меню...</p>'; // Показываем индикатор загрузки
 
         try {
             const response = await fetch(`${API_BASE_URL_ADMIN}/menu`);
-            if (!response.ok) throw new Error('Ошибка загрузки позиций меню');
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({ message: 'Ошибка загрузки позиций меню' }));
+                throw new Error(errData.message || `Ошибка сервера: ${response.status}`);
+            }
             const menuItems = await response.json();
 
             if (menuItems.length === 0) {
@@ -523,24 +593,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
+            console.log("fetchAndDisplayAdminMenuItems: Успех. Повторно применяем активное состояние UI."); // Лог
+            // --- В КОНЦЕ УСПЕШНОГО ОТОБРАЖЕНИЯ ДАННЫХ ---
+            requestAnimationFrame(() => { // Используем RAF
+                if (currentActiveSectionId) {
+                    updateCurrentSectionUI(currentActiveSectionId); // <<< ЯВНО ВОССТАНАВЛИВАЕМ UI
+                }
+            });
+
+
         } catch (error) {
-            console.error("Ошибка при загрузке позиций меню в админке:", error);
+            console.error("fetchAndDisplayAdminMenuItems: Ошибка при загрузке позиций меню:", error); // Лог ошибки
             menuItemsListDiv.innerHTML = `<p class="error-text">Ошибка: ${error.message}</p>`;
             showAdminMessage(`Ошибка загрузки позиций меню: ${error.message}`, 'error');
+            // --- ВОССТАНАВЛИВАЕМ UI ДАЖЕ ПРИ ОШИБКЕ ---
+            requestAnimationFrame(() => {
+                if (currentActiveSectionId) {
+                    updateCurrentSectionUI(currentActiveSectionId); // <<< ЯВНО ВОССТАНАВЛИВАЕМ UI
+                }
+            });
         }
     }
 
     async function populateCategoryDropdown() {
         const categorySelect = document.getElementById('menu-item-category');
         if (!categorySelect) {
-             // Если элемента нет, возможно, мы не в разделе Меню
-             // console.warn("Контейнер #menu-item-category не найден.");
+            console.warn("populateCategoryDropdown: Контейнер #menu-item-category не найден."); // Лог
             return;
         }
+        console.log("populateCategoryDropdown: Загрузка категорий для дропдауна..."); // Лог
 
         try {
             const response = await fetch(`${API_BASE_URL_ADMIN}/categories`);
-            if (!response.ok) throw new Error('Ошибка загрузки категорий для дропдауна');
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({ message: 'Ошибка загрузки категорий' }));
+                throw new Error(errData.message || `Ошибка сервера: ${response.status}`);
+            }
             const categories = await response.json();
 
             categorySelect.innerHTML = '<option value="">-- Выберите категорию --</option>';
@@ -550,13 +638,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 option.textContent = cat.name;
                 categorySelect.appendChild(option);
             });
+            console.log("populateCategoryDropdown: Успех."); // Лог
         } catch (error) {
-            console.error("Ошибка populateCategoryDropdown:", error);
+            console.error("populateCategoryDropdown: Ошибка:", error); // Лог ошибки
             categorySelect.innerHTML = '<option value="">Ошибка загрузки категорий</option>';
+            showAdminMessage(`Ошибка загрузки категорий для формы: ${error.message}`, 'error');
         }
     }
 
     async function openMenuItemModal(id = null) {
+        console.log(`openMenuItemModal: ID=${id}`); // Лог
         const modal = document.getElementById('menu-item-modal');
         const title = document.getElementById('menu-item-modal-title');
         const form = document.getElementById('menu-item-form');
@@ -564,7 +655,8 @@ document.addEventListener('DOMContentLoaded', () => {
         form.reset();
         document.getElementById('menu-item-id').value = id || '';
 
-        await populateCategoryDropdown(); // Загружаем категории для дропдауна каждый раз
+        // Всегда загружаем категории для дропдауна при открытии модалки
+        await populateCategoryDropdown();
 
         title.textContent = id ? 'Редактировать позицию меню' : 'Добавить позицию меню';
 
@@ -583,11 +675,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (categorySelect && categorySelect.querySelector(`option[value="${itemData.category_id}"]`)) {
                     categorySelect.value = itemData.category_id;
                 } else {
-                    console.warn(`Категория с ID ${itemData.category_id} для блюда ${itemData.name} не найдена в дропдауне.`);
+                    console.warn(`openMenuItemModal: Категория с ID ${itemData.category_id} для блюда ${itemData.name} не найдена в дропдауне.`); // Лог предупреждения
                 }
                 document.getElementById('menu-item-image-url').value = itemData.image_url || '';
+                console.log(`openMenuItemModal: Loaded data for ID=${id}`); // Лог
             } catch (error) {
-                console.error("Ошибка загрузки данных блюда для редактирования:", error);
+                console.error("openMenuItemModal: Ошибка загрузки данных блюда для редактирования:", error); // Лог ошибки
                 showAdminMessage(`Ошибка загрузки данных для редактирования: ${error.message}`, 'error');
                 closeModal('menu-item-modal'); // Закрываем модалку при ошибке
                 return;
@@ -604,6 +697,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const formButton = event.submitter;
 
         formButton.disabled = true;
+        console.log(`handleMenuItemFormSubmit: Отправка формы (${id ? 'Ред' : 'Доб'}).`); // Лог
+
 
         const menuItemData = {
             name: document.getElementById('menu-item-name').value.trim(),
@@ -639,30 +734,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             closeModal('menu-item-modal');
-            await fetchAndDisplayAdminMenuItems(); // Обновляем список БЛЮД
-            //populateCategoryDropdown(); // Обновляем дропдаун категорий не нужно при изменении блюда
             showAdminMessage(id ? 'Позиция меню успешно обновлена!' : 'Позиция меню успешно добавлена!', 'success');
 
-             // Найдем активную ссылку, чтобы получить sectionId
-             const activeLink = document.querySelector('.sidebar-nav a.active');
-             if(activeLink) {
-                 const currentSectionId = activeLink.dataset.section;
-                 // Принудительно обновляем UI текущего раздела после успешного действия
-                 requestAnimationFrame(() => updateCurrentSectionUI(currentSectionId));
-             } else {
-                  console.warn("Нет активной ссылки после сохранения позиции меню. Не удалось обновить UI.");
-             }
+            // --- ОБНОВЛЯЕМ ДАННЫЕ ПОСЛЕ УСПЕХА ---
+            // fetchAndDisplayAdminMenuItems в конце вызовет updateCurrentSectionUI(currentActiveSectionId)
+            await fetchAndDisplayAdminMenuItems();
+            // populateCategoryDropdown не нужен после изменения блюда
 
+            console.log("handleMenuItemFormSubmit: Успех."); // Лог
 
         } catch (error) {
-            console.error("Ошибка сохранения позиции меню:", error);
+            console.error("handleMenuItemFormSubmit: Ошибка сохранения позиции меню:", error); // Лог ошибки
             showAdminMessage(`Ошибка: ${error.message}`, 'error');
+            // При ошибке, обновляем данные (если возможно) и восстанавливаем UI
+            requestAnimationFrame(() => {
+                if (currentActiveSectionId) {
+                    // fetchAndDisplayAdminMenuItems(); // Можно попробовать обновить данные
+                    updateCurrentSectionUI(currentActiveSectionId);
+                }
+            });
         } finally {
             formButton.disabled = false;
         }
     }
 
     async function deleteMenuItem(id) {
+        console.log(`deleteMenuItem: ID=${id}`); // Лог
         if (!confirm('Вы уверены, что хотите удалить эту позицию меню?')) return;
 
         try {
@@ -677,24 +774,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(responseData.message || `Ошибка сервера: ${response.status}`);
             }
 
-            await fetchAndDisplayAdminMenuItems(); // Обновляем список БЛЮД
-             //populateCategoryDropdown(); // Обновляем дропдаун категорий не нужно при удалении блюда
             showAdminMessage('Позиция меню успешно удалена!', 'success');
 
-             // Найдем активную ссылку, чтобы получить sectionId
-             const activeLink = document.querySelector('.sidebar-nav a.active');
-             if(activeLink) {
-                 const currentSectionId = activeLink.dataset.section;
-                 // Принудительно обновляем UI текущего раздела после успешного действия
-                 requestAnimationFrame(() => updateCurrentSectionUI(currentSectionId));
-             } else {
-                 console.warn("Нет активной ссылки после удаления позиции меню. Не удалось обновить UI.");
-             }
+            // --- ОБНОВЛЯЕМ ДАННЫЕ ПОСЛЕ УСПЕХА ---
+            // fetchAndDisplayAdminMenuItems в конце вызовет updateCurrentSectionUI(currentActiveSectionId)
+            await fetchAndDisplayAdminMenuItems();
+            // populateCategoryDropdown не нужен после удаления блюда
 
+            console.log("deleteMenuItem: Успех."); // Лог
 
         } catch (error) {
-            console.error("Ошибка удаления позиции меню:", error);
+            console.error("deleteMenuItem: Ошибка удаления позиции меню:", error); // Лог ошибки
             showAdminMessage(`Ошибка: ${error.message}`, 'error');
+            // При ошибке, обновляем данные (если возможно) и восстанавливаем UI
+            requestAnimationFrame(() => {
+                if (currentActiveSectionId) {
+                    // fetchAndDisplayAdminMenuItems(); // Можно попробовать обновить данные
+                    updateCurrentSectionUI(currentActiveSectionId);
+                }
+            });
         }
     }
 
@@ -703,12 +801,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadOrdersManagementContent() {
         const ordersManagementSection = document.getElementById('orders-management-content');
-         if (!ordersManagementSection) return;
+        if (!ordersManagementSection || ordersManagementSection.dataset.loaded === 'true') {
+            console.log("loadOrdersManagementContent: Structure already loaded or element not found."); // Лог
+            return; // Если уже загружено или элемента нет, ничего не делаем
+        }
 
-         if (document.getElementById('orders-list')) {
-             await fetchAndDisplayAdminOrders(); // Структура есть, просто обновляем данные
-             return;
-         }
+        console.log("loadOrdersManagementContent: Generating structure..."); // Лог
 
         ordersManagementSection.innerHTML = `
             <h4>Управление Заказами</h4>
@@ -741,28 +839,45 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
-        const ordersListDiv = document.getElementById('orders-list');
-        ordersListDiv.innerHTML = '<p>Загрузка заказов...</p>';
+        ordersManagementSection.dataset.loaded = 'true'; // Устанавливаем флаг после создания структуры
 
-        await fetchAndDisplayAdminOrders();
-
+        // Навешиваем обработчики на фильтры (они теперь существуют)
         document.getElementById('apply-order-filters-btn').addEventListener('click', () => {
             const statusFilter = document.getElementById('order-status-filter').value;
             const dateFilter = document.getElementById('order-date-filter').value;
-            fetchAndDisplayAdminOrders({ status: statusFilter, date: dateFilter });
+            console.log(`Applying order filters: status=${statusFilter}, date=${dateFilter}`); // Лог
+            fetchAndDisplayAdminOrders({ status: statusFilter, date: dateFilter }); // fetchAndDisplay... вызовет updateCurrentSectionUI
         });
-         document.getElementById('reset-order-filters-btn').addEventListener('click', () => {
+        document.getElementById('reset-order-filters-btn').addEventListener('click', () => {
+            console.log("Resetting order filters."); // Лог
             document.getElementById('order-status-filter').value = '';
             document.getElementById('order-date-filter').value = '';
-            fetchAndDisplayAdminOrders({});
+            fetchAndDisplayAdminOrders({}); // fetchAndDisplay... вызовет updateCurrentSectionUI
         });
+
+
+        const ordersListDiv = document.getElementById('orders-list');
+        ordersListDiv.innerHTML = '<p>Загрузка заказов...</p>'; // Показываем индикатор загрузки
+
+        // Загружаем и отображаем данные после создания структуры
+        await fetchAndDisplayAdminOrders({}); // fetchAndDisplay... вызовет updateCurrentSectionUI в конце
+
+        console.log("loadOrdersManagementContent: Structure and initial data loaded."); // Лог
+
     }
 
     async function fetchAndDisplayAdminOrders(filters = {}) {
         const ordersListDiv = document.getElementById('orders-list');
-         if (!ordersListDiv) return; // Если контейнера нет
+        if (!ordersListDiv) {
+            console.warn("fetchAndDisplayAdminOrders: Контейнер #orders-list не найден."); // Лог
+            return;
+        }
+        console.log("fetchAndDisplayAdminOrders: Загрузка и отображение заказов...", filters); // Лог
+        // Не стираем сразу при фильтрации/обновлении статуса, только при первой загрузке
+        if (!ordersListDiv.querySelector('table.admin-table')) {
+            ordersListDiv.innerHTML = '<p>Загрузка заказов...</p>';
+        }
 
-        // ordersListDiv.innerHTML = '<p>Загрузка заказов...</p>'; // Не стираем сразу при фильтрации/обновлении статуса
 
         const authToken = localStorage.getItem('authToken');
 
@@ -786,82 +901,109 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (orders.length === 0) {
                 ordersListDiv.innerHTML = '<p>Заказы не найдены (или не соответствуют фильтрам).</p>';
-                return;
+            } else {
+                const table = document.createElement('table');
+                table.className = 'admin-table';
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Тип</th>
+                            <th>Столик/Время</th>
+                            <th>Сумма</th>
+                            <th>Статус</th>
+                            <th>Дата создания</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${orders.map(order => `
+                            <tr data-order-id="${order.id}">
+                                <td>${order.id}</td>
+                                <td>${order.order_type === 'table' ? 'За столиком' : 'Самовывоз'}</td>
+                                <td>${order.order_type === 'table' ? (order.table_number || 'N/A') : (order.pickup_time ? formatTime(order.pickup_time) : 'N/A')}</td>
+                                <td>${parseFloat(order.total_amount).toFixed(2)} руб.</td>
+                                <td>
+                                    <select class="order-status-select" data-order-id="${order.id}" data-previous-status="${order.status}">
+                                        <option value="new" ${order.status === 'new' ? 'selected' : ''}>Новый</option>
+                                        <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>Готовится</option>
+                                        <option value="ready" ${order.status === 'ready' ? 'selected' : ''}>Готов</option>
+                                        <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Выдан</option>
+                                        <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Отменен</option>
+                                    </select>
+                                </td>
+                                <td>${new Date(order.created_at).toLocaleString('ru-RU')}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info view-order-details-btn" data-order-id="${order.id}">Детали</button>
+                                    <!-- Кнопка удаления заказа -->
+                                    <!-- <button class="btn btn-sm btn-danger delete-order-btn" data-order-id="${order.id}">Удалить</button> -->
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                ordersListDiv.innerHTML = ''; // Очищаем "Загрузка..."
+                ordersListDiv.appendChild(table);
+
+                // Навешиваем обработчики на элементы внутри таблицы (они теперь существуют)
+                table.querySelectorAll('.order-status-select').forEach(select => {
+                    // Сохраняем текущее значение как "предыдущее" перед навешиванием обработчика
+                    select.dataset.previousStatus = select.value;
+                    select.addEventListener('change', (e) => {
+                        updateOrderStatus(e.target.dataset.orderId, e.target.value, e.target); // updateOrderStatus вызовет fetchAndDisplayOrders в конце
+                    });
+                });
+                table.querySelectorAll('.view-order-details-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        openOrderDetailsModal(e.target.dataset.orderId);
+                    });
+                });
+
             }
 
-            const table = document.createElement('table');
-            table.className = 'admin-table';
-            table.innerHTML = `
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Тип</th>
-                        <th>Столик/Время</th>
-                        <th>Сумма</th>
-                        <th>Статус</th>
-                        <th>Дата создания</th>
-                        <th>Действия</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${orders.map(order => `
-                        <tr data-order-id="${order.id}">
-                            <td>${order.id}</td>
-                            <td>${order.order_type === 'table' ? 'За столиком' : 'Самовывоз'}</td>
-                            <td>${order.order_type === 'table' ? (order.table_number || 'N/A') : (order.pickup_time ? formatTime(order.pickup_time) : 'N/A')}</td>
-                            <td>${parseFloat(order.total_amount).toFixed(2)} руб.</td>
-                            <td>
-                                <select class="order-status-select" data-order-id="${order.id}" data-previous-status="${order.status}">
-                                    <option value="new" ${order.status === 'new' ? 'selected' : ''}>Новый</option>
-                                    <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>Готовится</option>
-                                    <option value="ready" ${order.status === 'ready' ? 'selected' : ''}>Готов</option>
-                                    <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Выдан</option>
-                                    <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Отменен</option>
-                                </select>
-                            </td>
-                            <td>${new Date(order.created_at).toLocaleString('ru-RU')}</td>
-                            <td>
-                                <button class="btn btn-sm btn-info view-order-details-btn" data-order-id="${order.id}">Детали</button>
-                                <!-- Кнопка удаления заказа -->
-                                <!-- <button class="btn btn-sm btn-danger delete-order-btn" data-order-id="${order.id}">Удалить</button> -->
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            `;
-            ordersListDiv.innerHTML = '';
-            ordersListDiv.appendChild(table);
-
-            table.querySelectorAll('.order-status-select').forEach(select => {
-                // Сохраняем текущее значение как "предыдущее" перед навешиванием обработчика
-                select.dataset.previousStatus = select.value;
-                select.addEventListener('change', (e) => {
-                    updateOrderStatus(e.target.dataset.orderId, e.target.value, e.target);
-                });
-            });
-            table.querySelectorAll('.view-order-details-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    openOrderDetailsModal(e.target.dataset.orderId);
-                });
+            console.log("fetchAndDisplayAdminOrders: Успех. Повторно применяем активное состояние UI."); // Лог
+            // --- В КОНЦЕ УСПЕШНОГО ОТОБРАЖЕНИЯ ДАННЫХ ---
+            requestAnimationFrame(() => { // Используем RAF
+                if (currentActiveSectionId) {
+                    updateCurrentSectionUI(currentActiveSectionId); // <<< ЯВНО ВОССТАНАВЛИВАЕМ UI
+                }
             });
 
 
         } catch (error) {
-            console.error("Ошибка при загрузке заказов в админке:", error);
+            console.error("fetchAndDisplayAdminOrders: Ошибка при загрузке заказов:", error); // Лог ошибки
             ordersListDiv.innerHTML = `<p class="error-text">Ошибка: ${error.message}</p>`;
             showAdminMessage(`Ошибка загрузки заказов: ${error.message}`, 'error');
+            // --- ВОССТАНАВЛИВАЕМ UI ДАЖЕ ПРИ ОШИБКЕ ---
+            requestAnimationFrame(() => {
+                if (currentActiveSectionId) {
+                    updateCurrentSectionUI(currentActiveSectionId); // <<< ЯВНО ВОССТАНАВЛИВАЕМ UI
+                }
+            });
         }
     }
 
     async function updateOrderStatus(orderId, newStatus, selectElement) {
+        console.log(`Action: Attempting to update order status. Order ID=${orderId}, newStatus=${newStatus}`); // Лог
+
         const authToken = localStorage.getItem('authToken');
+        // Сохраняем предыдущий статус из data-атрибута selectElement (передается из fetchAndDisplay)
         const oldStatus = selectElement ? selectElement.dataset.previousStatus : null;
 
-         if (selectElement) {
-             selectElement.dataset.previousStatus = selectElement.value; // Сохраняем текущее перед запросом
-         }
+        // Оптимистичное обновление UI (до отправки запроса) - опционально, но может улучшить отзывчивость
+        // const originalSelectValue = selectElement.value;
+        // if(selectElement) selectElement.value = newStatus;
+
+        // Сохраняем текущее выбранное значение как "предыдущее" перед запросом
+        // В случае ошибки, мы откатимся на это значение
+        if (selectElement) {
+            selectElement.dataset.previousStatus = selectElement.value;
+            console.log(`UI: Temporarily set previous status for order ${orderId} to ${selectElement.value}.`); // Лог
+        }
+
 
         try {
+            console.log(`API: Sending PUT request to ${API_BASE_URL_ADMIN}/orders/${orderId}/status with data:`, { status: newStatus }); // Лог запроса
             const response = await fetch(`${API_BASE_URL_ADMIN}/orders/${orderId}/status`, {
                 method: 'PUT',
                 headers: {
@@ -872,50 +1014,79 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const responseData = await response.json().catch(() => ({}));
+            console.log(`API: Received response for PUT orders/${orderId}/status. Status: ${response.status}. Data:`, responseData); // Лог ответа
 
             if (!response.ok) {
+                console.error("API Error: Update order status failed.", responseData); // Лог ошибки API
+                // Откатываем UI, если оптимистично обновляли
+                // if(selectElement) selectElement.value = originalSelectValue;
                 throw new Error(responseData.message || `Ошибка обновления статуса: ${response.status}`);
             }
 
-            console.log('Статус заказа обновлен:', responseData);
+            // Предполагаем, что бэкенд возвращает обновленный заказ или подтверждение
+            console.log('Action: Статус заказа успешно обновлен:', responseData); // Лог успеха
             showAdminMessage('Статус заказа успешно обновлен!', 'success');
 
+            // --- ОБНОВЛЯЕМ UI ЛОКАЛЬНО ВМЕСТО ПЕРЕЗАГРУЗКИ СПИСКА ---
             if (selectElement) {
+                // Если мы не делали оптимистичное обновление, устанавливаем значение сейчас
+                selectElement.value = newStatus;
                 selectElement.dataset.previousStatus = newStatus; // Обновляем на новый статус при успехе
+                console.log(`UI: Updated status select for order ${orderId} to ${newStatus}.`); // Лог UI обновления
             }
+            // *** ВАЖНО: НЕ ВЫЗЫВАЕМ fetchAndDisplayAdminOrders ЗДЕСЬ ***
 
-             // Найдем активную ссылку, чтобы получить sectionId
-             const activeLink = document.querySelector('.sidebar-nav a.active');
-             if(activeLink) {
-                 const currentSectionId = activeLink.dataset.section;
-                 // Принудительно обновляем UI текущего раздела после успешного действия
-                 requestAnimationFrame(() => updateCurrentSectionUI(currentSectionId));
-             } else {
-                  console.warn("Нет активной ссылки после обновления статуса заказа. Не удалось обновить UI.");
-             }
+            // UI текущего раздела уже активен.
+            // После локального обновления DOM, можно еще раз вызвать updateCurrentSectionUI
+            // на всякий случай, чтобы убедиться в видимости.
+            requestAnimationFrame(() => {
+                if (currentActiveSectionId) {
+                    console.log("Action: updateOrderStatus success, reapplying active UI state."); // Лог
+                    updateCurrentSectionUI(currentActiveSectionId);
+                } else {
+                    console.warn("Action: updateOrderStatus success, but currentActiveSectionId is null."); // Лог
+                }
+            });
 
 
         } catch (error) {
-            console.error(`Ошибка при обновлении статуса заказа ${orderId}:`, error);
+            console.error(`Action Error: Ошибка при обновлении статуса заказа ${orderId}:`, error); // Лог ошибки выполнения
             showAdminMessage(`Ошибка: ${error.message}`, 'error');
 
+            // Откатываем UI, если была ошибка (и selectElement существует)
             if (selectElement && oldStatus !== null) {
-                selectElement.value = oldStatus;
-                selectElement.dataset.previousStatus = oldStatus; // Возвращаем старый статус в data-атрибут
+                selectElement.value = oldStatus; // Визуально откатываем select
+                selectElement.dataset.previousStatus = oldStatus; // Возвращаем старый статус в data-атрибут select
+                console.log(`UI: Rolled back status select for order ${orderId} to ${oldStatus} due to error.`); // Лог отката UI
             }
+            // При ошибке, явно восстанавливаем UI текущего раздела
+            requestAnimationFrame(() => {
+                if (currentActiveSectionId) {
+                    console.log("Action: updateOrderStatus error, reapplying active UI state."); // Лог
+                    updateCurrentSectionUI(currentActiveSectionId);
+                } else {
+                    console.warn("Action: updateOrderStatus error, but currentActiveSectionId is null."); // Лог
+                }
+            });
         }
     }
 
     async function openOrderDetailsModal(orderId) {
+        console.log(`openOrderDetailsModal: Order ID=${orderId}`); // Лог
         const modal = document.getElementById('order-details-modal');
         const titleOrderIdSpan = document.getElementById('details-order-id');
         const contentDiv = document.getElementById('order-details-content');
         const authToken = localStorage.getItem('authToken');
 
         titleOrderIdSpan.textContent = orderId;
-        contentDiv.innerHTML = '<p>Загрузка деталей...</p>';
+        contentDiv.innerHTML = '<p>Загрузка деталей...</p>'; // Показываем индикатор загрузки
         modal.style.display = 'block';
-        setTimeout(() => modal.querySelector('.close-btn').focus(), 50);
+        // Даем фокус кнопке закрытия для доступности
+        requestAnimationFrame(() => {
+            const closeBtn = modal.querySelector('.close-btn');
+            if (closeBtn) closeBtn.focus();
+        });
+
 
         try {
             const response = await fetch(`${API_BASE_URL_ADMIN}/orders/${orderId}`, {
@@ -932,9 +1103,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p><strong>ID Заказа:</strong> ${order.id}</p>
                 <p><strong>Тип:</strong> ${order.order_type === 'table' ? 'За столиком' : 'Самовывоз'}</p>
                 ${order.order_type === 'table' ? `<p><strong>Столик:</strong> ${order.table_number || 'N/A'}</p>` : ''}
-                ${order.order_type === 'takeaway' ? 
-                    `<p><strong>Время самовывоза:</strong> ${order.pickup_time ? formatTime(order.pickup_time) : 'N/A'}</p>` 
-                : ''}
+                ${order.order_type === 'takeaway' ?
+                    `<p><strong>Время самовывоза:</strong> ${order.pickup_time ? formatTime(order.pickup_time) : 'N/A'}</p>`
+                    : ''}
                 <p><strong>Статус:</strong> ${order.status}</p>
                 <p><strong>Сумма:</strong> ${parseFloat(order.total_amount).toFixed(2)} руб.</p>
                 <p><strong>Создан:</strong> ${new Date(order.created_at).toLocaleString('ru-RU')}</p>
@@ -951,15 +1122,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 detailsHtml += '<p>Нет позиций в заказе.</p>';
             }
             contentDiv.innerHTML = detailsHtml;
+            console.log(`openOrderDetailsModal: Loaded details for Order ID=${orderId}`); // Лог
 
         } catch (error) {
-            console.error("Ошибка при загрузке деталей заказа:", error);
+            console.error("openOrderDetailsModal: Ошибка при загрузке деталей заказа:", error); // Лог ошибки
             contentDiv.innerHTML = `<p class="error-text">Ошибка загрузки: ${error.message}</p>`;
             showAdminMessage(`Ошибка загрузки деталей заказа: ${error.message}`, 'error');
-            closeModal('order-details-modal'); // Закрываем модалку при ошибке
+            // closeModal('order-details-modal'); // Не закрываем модалку при ошибке загрузки деталей, показываем ошибку внутри
         }
     }
 
+    // Вспомогательная функция для форматирования времени (оставлена как есть)
     function formatTime(timeString) {
         if (!timeString) return 'N/A';
         // Проверяем, соответствует ли строка формату HH:MM
@@ -971,12 +1144,12 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const date = new Date(timeString);
                 if (!isNaN(date.getTime())) { // Проверяем, что дата валидна
-                     return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+                    return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
                 }
             } catch (e) {
-                console.error("Не удалось распарсить или отформатировать время:", timeString, e);
+                console.error("formatTime: Не удалось распарсить или отформатировать время:", timeString, e); // Лог ошибки
             }
-             return timeString; // Возвращаем оригинальную строку или 'Некорректный формат времени'
+            return timeString; // Возвращаем оригинальную строку или 'Некорректный формат времени'
         }
     }
 
@@ -984,12 +1157,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadTablesManagementContent() {
         const tablesManagementSection = document.getElementById('tables-management-content');
-         if (!tablesManagementSection) return;
+        if (!tablesManagementSection || tablesManagementSection.dataset.loaded === 'true') {
+            console.log("loadTablesManagementContent: Structure already loaded or element not found."); // Лог
+            return; // Если уже загружено или элемента нет, ничего не делаем
+        }
 
-         if (document.getElementById('tables-grid-display')) {
-             await fetchAndDisplayAdminTables(); // Структура есть, просто обновляем данные
-             return;
-         }
+        console.log("loadTablesManagementContent: Generating structure..."); // Лог
 
         tablesManagementSection.innerHTML = `
             <h4>Управление Столиками</h4>
@@ -1023,20 +1196,33 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
-        const tablesGridDiv = document.getElementById('tables-grid-display');
-        tablesGridDiv.innerHTML = '<p>Загрузка столиков...</p>';
+        tablesManagementSection.dataset.loaded = 'true'; // Устанавливаем флаг после создания структуры
 
-        await fetchAndDisplayAdminTables();
-
+        // Навешиваем обработчики на кнопки и формы (они теперь существуют)
         document.getElementById('add-table-btn').addEventListener('click', () => openTableModal());
-        document.getElementById('table-form').addEventListener('submit', handleTableFormSubmit);
+        document.getElementById('table-form').addEventListener('submit', handleTableFormSubmit); // handleTableFormSubmit вызовет fetchAndDisplayTables в конце
+
+        const tablesGridDiv = document.getElementById('tables-grid-display');
+        tablesGridDiv.innerHTML = '<p>Загрузка столиков...</p>'; // Показываем индикатор загрузки
+
+        // Загружаем и отображаем данные после создания структуры
+        await fetchAndDisplayAdminTables(); // fetchAndDisplay... вызовет updateCurrentSectionUI в конце
+
+        console.log("loadTablesManagementContent: Structure and initial data loaded."); // Лог
     }
 
     async function fetchAndDisplayAdminTables() {
         const tablesGridDiv = document.getElementById('tables-grid-display');
-         if (!tablesGridDiv) return; // Если контейнера нет
+        if (!tablesGridDiv) {
+            console.warn("fetchAndDisplayAdminTables: Контейнер #tables-grid-display не найден."); // Лог
+            return;
+        }
+        console.log("fetchAndDisplayAdminTables: Загрузка и отображение столиков..."); // Лог
+        // Не стираем сразу, только при первой загрузке
+        if (!tablesGridDiv.querySelector('.tables-grid-container')) {
+            tablesGridDiv.innerHTML = '<p>Загрузка столиков...</p>';
+        }
 
-        // tablesGridDiv.innerHTML = '<p>Загрузка столиков...</p>'; // Не стираем сразу
 
         const authToken = localStorage.getItem('authToken');
 
@@ -1053,7 +1239,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tables.length === 0) {
                 tablesGridDiv.innerHTML = '<p>Столики не найдены. Добавьте первый!</p>';
             } else {
-                tablesGridDiv.innerHTML = '';
+                tablesGridDiv.innerHTML = ''; // Очищаем "Загрузка..."
                 const gridContainer = document.createElement('div');
                 gridContainer.className = 'tables-grid-container';
 
@@ -1061,7 +1247,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const tableCard = document.createElement('div');
                     tableCard.className = `table-card status-${table.status}`;
                     tableCard.dataset.tableId = table.id;
-                    tableCard.dataset.originalStatus = table.status;
+                    tableCard.dataset.originalStatus = table.status; // Сохраняем оригинальный статус для отката UI при ошибке
 
                     tableCard.innerHTML = `
                         <div class="table-card-number">${table.table_number}</div>
@@ -1080,13 +1266,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     gridContainer.appendChild(tableCard);
 
+                    // Навешиваем обработчики на элементы внутри карточки (они теперь существуют)
                     const statusSelect = tableCard.querySelector('.table-status-select-card');
                     statusSelect.addEventListener('change', (e) => {
                         const selectElement = e.target;
                         const tableId = selectElement.dataset.tableId;
                         const newStatus = selectElement.value;
                         const cardElement = selectElement.closest('.table-card');
-                        updateTableStatus(tableId, newStatus, cardElement);
+                        updateTableStatus(tableId, newStatus, cardElement); // updateTableStatus вызовет fetchAndDisplayTables в конце
                     });
                     tableCard.querySelector('.edit-table-btn').addEventListener('click', (e) => {
                         const tableId = e.target.closest('.table-card').dataset.tableId;
@@ -1094,27 +1281,42 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (tableData) {
                             openTableModal(tableData.id, tableData.table_number, tableData.status);
                         } else {
-                            console.error("Данные столика для редактирования не найдены.");
+                            console.error("fetchAndDisplayAdminTables: Данные столика для редактирования не найдены."); // Лог ошибки
                             showAdminMessage("Ошибка: Не удалось получить данные столика для редактирования.", 'error');
                         }
                     });
                     tableCard.querySelector('.delete-table-btn').addEventListener('click', (e) => {
                         const tableId = e.target.closest('.table-card').dataset.tableId;
-                        deleteTable(tableId);
+                        deleteTable(tableId); // deleteTable вызовет fetchAndDisplayTables в конце
                     });
                 });
                 tablesGridDiv.appendChild(gridContainer);
             }
 
+            console.log("fetchAndDisplayAdminTables: Успех. Повторно применяем активное состояние UI."); // Лог
+            // --- В КОНЦЕ УСПЕШНОГО ОТОБРАЖЕНИЯ ДАННЫХ ---
+            requestAnimationFrame(() => { // Используем RAF
+                if (currentActiveSectionId) {
+                    updateCurrentSectionUI(currentActiveSectionId); // <<< ЯВНО ВОССТАНАВЛИВАЕМ UI
+                }
+            });
+
 
         } catch (error) {
-            console.error("Ошибка при загрузке столиков в админке:", error);
+            console.error("fetchAndDisplayAdminTables: Ошибка при загрузке столиков:", error); // Лог ошибки
             tablesGridDiv.innerHTML = `<p class="error-text">Ошибка: ${error.message}</p>`;
             showAdminMessage(`Ошибка загрузки столиков: ${error.message}`, 'error');
+            // --- ВОССТАНАВЛИВАЕМ UI ДАЖЕ ПРИ ОШИБКЕ ---
+            requestAnimationFrame(() => {
+                if (currentActiveSectionId) {
+                    updateCurrentSectionUI(currentActiveSectionId); // <<< ЯВНО ВОССТАНАВЛИВАЕМ UI
+                }
+            });
         }
     }
 
     function openTableModal(id = null, number = '', status = 'free') {
+        console.log(`openTableModal: ID=${id}, Number=${number}, Status=${status}`); // Лог
         const modal = document.getElementById('table-modal');
         const title = document.getElementById('table-modal-title');
         const form = document.getElementById('table-form');
@@ -1124,11 +1326,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('table-id').value = id || '';
         document.getElementById('table-number-input').value = number || '';
 
+        // Скрываем поле статуса при редактировании существующего столика
         if (statusSelectGroup) {
-             statusSelectGroup.style.display = id ? 'none' : 'block';
-             if (!id) {
-                  document.getElementById('table-status-select-modal').value = status || 'free';
-             }
+            statusSelectGroup.style.display = id ? 'none' : 'block';
+            if (!id) { // Только при добавлении нового столика
+                document.getElementById('table-status-select-modal').value = status || 'free';
+            }
         }
 
 
@@ -1141,11 +1344,13 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         const id = document.getElementById('table-id').value;
         const table_number = document.getElementById('table-number-input').value.trim();
-        const status = document.getElementById('table-status-select-modal').value;
+        const status = document.getElementById('table-status-select-modal').value; // Только для добавления
         const authToken = localStorage.getItem('authToken');
         const formButton = event.submitter;
 
         formButton.disabled = true;
+        console.log(`handleTableFormSubmit: Отправка формы (${id ? 'Ред' : 'Доб'}). ID=${id}, Number=${table_number}`); // Лог
+
 
         if (!table_number) {
             showAdminMessage('Номер/название столика не может быть пустым.', 'error');
@@ -1160,8 +1365,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (id) {
             method = 'PUT';
             url = `${API_BASE_URL_ADMIN}/tables/${id}`;
+            // При редактировании номер столика обновляется через этот эндпоинт
+            // Статус обновляется через отдельный эндпоинт updateTableStatus
         } else {
-            payload.status = status;
+            payload.status = status; // Статус только при создании
         }
 
         try {
@@ -1181,35 +1388,39 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             closeModal('table-modal');
-            await fetchAndDisplayAdminTables(); // Обновляем список СТОЛИКОВ
             showAdminMessage(id ? 'Столик успешно обновлен!' : 'Столик успешно добавлен!', 'success');
 
-             // Найдем активную ссылку, чтобы получить sectionId
-             const activeLink = document.querySelector('.sidebar-nav a.active');
-             if(activeLink) {
-                 const currentSectionId = activeLink.dataset.section;
-                 // Принудительно обновляем UI текущего раздела после успешного действия
-                 requestAnimationFrame(() => updateCurrentSectionUI(currentSectionId));
-             } else {
-                  console.warn("Нет активной ссылки после сохранения столика. Не удалось обновить UI.");
-             }
+            // --- ОБНОВЛЯЕМ ДАННЫЕ ПОСЛЕ УСПЕХА ---
+            // fetchAndDisplayAdminTables в конце вызовет updateCurrentSectionUI(currentActiveSectionId)
+            await fetchAndDisplayAdminTables();
 
+            console.log("handleTableFormSubmit: Успех."); // Лог
 
         } catch (error) {
-            console.error("Ошибка сохранения столика:", error);
+            console.error("handleTableFormSubmit: Ошибка сохранения столика:", error); // Лог ошибки
             showAdminMessage(`Ошибка: ${error.message}`, 'error');
+            // При ошибке, обновляем данные (если возможно) и восстанавливаем UI
+            requestAnimationFrame(() => {
+                if (currentActiveSectionId) {
+                    // fetchAndDisplayAdminTables(); // Можно попробовать обновить данные
+                    updateCurrentSectionUI(currentActiveSectionId);
+                }
+            });
         } finally {
             formButton.disabled = false;
         }
     }
 
     async function updateTableStatus(tableId, newStatus, tableCardElement) {
+        console.log(`updateTableStatus: Table ID=${tableId}, newStatus=${newStatus}`); // Лог
         const authToken = localStorage.getItem('authToken');
         const selectElement = tableCardElement ? tableCardElement.querySelector('.table-status-select-card') : null;
         const oldStatus = selectElement ? selectElement.dataset.previousStatus : null;
 
         if (selectElement) {
-             selectElement.dataset.previousStatus = selectElement.value; // Сохраняем текущее перед запросом
+            // Сохраняем текущее значение как "предыдущее" перед запросом
+            // В случае ошибки, мы откатимся на это значение
+            selectElement.dataset.previousStatus = selectElement.value;
         }
 
         try {
@@ -1229,31 +1440,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const updatedTable = responseData;
-            console.log('Статус столика обновлен:', updatedTable);
+            console.log('updateTableStatus: Статус столика успешно обновлен:', updatedTable); // Лог
             showAdminMessage('Статус столика успешно обновлен!', 'success');
 
+            // Обновляем класс карточки сразу после успеха
             if (tableCardElement) {
-                tableCardElement.classList.remove(...Array.from(tableCardElement.classList).filter(cls => cls.startsWith('status-')));
-                tableCardElement.classList.add(`status-${updatedTable.status}`);
-                tableCardElement.dataset.originalStatus = updatedTable.status;
+                tableCardElement.classList.remove('status-free', 'status-occupied', 'status-reserved'); // Удаляем старые классы статуса
+                tableCardElement.classList.add(`status-${updatedTable.status}`); // Добавляем новый
+                tableCardElement.dataset.originalStatus = updatedTable.status; // Обновляем оригинальный статус
             }
-             if (selectElement) {
-                 selectElement.dataset.previousStatus = newStatus; // Обновляем на новый статус при успехе
-             }
+            if (selectElement) {
+                selectElement.dataset.previousStatus = newStatus; // Обновляем на новый статус при успехе
+            }
 
-             // Найдем активную ссылку, чтобы получить sectionId
-             const activeLink = document.querySelector('.sidebar-nav a.active');
-             if(activeLink) {
-                 const currentSectionId = activeLink.dataset.section;
-                 // Принудительно обновляем UI текущего раздела после успешного действия
-                 requestAnimationFrame(() => updateCurrentSectionUI(currentSectionId));
-             } else {
-                  console.warn("Нет активной ссылки после обновления статуса столика. Не удалось обновить UI.");
-             }
+            // --- ОБНОВЛЯЕМ ДАННЫЕ ПОСЛЕ УСПЕХА ---
+            // fetchAndDisplayAdminTables в конце вызовет updateCurrentSectionUI(currentActiveSectionId)
+            // В данном случае можно не вызывать полную fetchAndDisplayTables, если обновление UI карточки уже произошло.
+            // Но вызов fetchAndDisplayAdminTables гарантирует актуальность всего списка и повторное применение UI.
+            // Если только UI карточки обновляется, то явный вызов updateCurrentSectionUI нужен.
+            // Выберем вызов fetchAndDisplayAdminTables для надежности, он перерисует всю сетку.
+            await fetchAndDisplayAdminTables();
 
 
         } catch (error) {
-            console.error(`Ошибка при обновлении статуса столика ${tableId}:`, error);
+            console.error(`updateTableStatus: Ошибка при обновлении статуса столика ${tableId}:`, error); // Лог ошибки
             showAdminMessage(`Ошибка: ${error.message}`, 'error');
 
             // Откатываем UI, если была ошибка
@@ -1263,14 +1473,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (tableCardElement) {
                     const originalStatus = tableCardElement.dataset.originalStatus;
-                    tableCardElement.classList.remove(...Array.from(tableCardElement.classList).filter(cls => cls.startsWith('status-')));
+                    tableCardElement.classList.remove('status-free', 'status-occupied', 'status-reserved');
                     if (originalStatus) tableCardElement.classList.add(`status-${originalStatus}`);
                 }
             }
+            // При ошибке, явно восстанавливаем UI текущего раздела
+            requestAnimationFrame(() => {
+                if (currentActiveSectionId) {
+                    updateCurrentSectionUI(currentActiveSectionId);
+                }
+            });
         }
     }
 
     async function deleteTable(id) {
+        console.log(`deleteTable: ID=${id}`); // Лог
         if (!confirm('Вы уверены, что хотите удалить этот столик?')) return;
         const authToken = localStorage.getItem('authToken');
 
@@ -1285,23 +1502,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(responseData.message || `Ошибка сервера: ${response.status}`);
             }
 
-            await fetchAndDisplayAdminTables(); // Обновляем список СТОЛИКОВ
             showAdminMessage('Столик успешно удален!', 'success');
 
-             // Найдем активную ссылку, чтобы получить sectionId
-             const activeLink = document.querySelector('.sidebar-nav a.active');
-             if(activeLink) {
-                 const currentSectionId = activeLink.dataset.section;
-                 // Принудительно обновляем UI текущего раздела после успешного действия
-                 requestAnimationFrame(() => updateCurrentSectionUI(currentSectionId));
-             } else {
-                  console.warn("Нет активной ссылки после удаления столика. Не удалось обновить UI.");
-             }
+            // --- ОБНОВЛЯЕМ ДАННЫЕ ПОСЛЕ УСПЕХА ---
+            // fetchAndDisplayAdminTables в конце вызовет updateCurrentSectionUI(currentActiveSectionId)
+            await fetchAndDisplayAdminTables();
 
+            console.log("deleteTable: Успех."); // Лог
 
         } catch (error) {
-            console.error("Ошибка удаления столика:", error);
+            console.error("deleteTable: Ошибка удаления столика:", error); // Лог ошибки
             showAdminMessage(`Ошибка: ${error.message}`, 'error');
+            // При ошибке, обновляем данные (если возможно) и восстанавливаем UI
+            requestAnimationFrame(() => {
+                if (currentActiveSectionId) {
+                    // fetchAndDisplayAdminTables(); // Можно попробовать обновить данные
+                    updateCurrentSectionUI(currentActiveSectionId);
+                }
+            });
         }
     }
 
@@ -1309,6 +1527,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Инициализация ---
     // Находим ПЕРВУЮ ссылку навигации и имитируем клик по ней
     // Это загрузит контент для первого доступного раздела по умолчанию.
-    findAndActivateFirstSection(); // Вызываем новую функцию
+    findAndActivateFirstSection(); // Вызываем функцию активации
 
+    console.log("Admin app initialized."); // Лог завершения инициализации
 });
