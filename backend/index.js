@@ -33,7 +33,7 @@ const PORT = process.env.PORT || 3001; // Порт для сервера, из .
 
 // Middlewares
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Разрешаем CORS-запросы (чтобы frontend мог обращаться)
+//app.options('*', cors(corsOptions)); // Разрешаем CORS-запросы (чтобы frontend мог обращаться)
 app.use(express.json()); // Позволяем Express разбирать JSON в теле запроса
 
 
