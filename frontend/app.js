@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableNumberInput = document.getElementById('table-number');
     const pickupTimeInput = document.getElementById('pickup-time');
 
-    const API_BASE_URL = 'http://localhost:3001/api';
-
+    //const API_BASE_URL = 'http://localhost:3001/api';
+    const API_BASE_URL = 'https://qrfood-backend.onrender.com/api';
     let allMenuItems = [];
     let currentCategoryId = null;
     let cart = []; // Наша корзина - массив объектов { menuItem, quantity }
