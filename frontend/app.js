@@ -318,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const createdOrder = await response.json();
             console.log('Заказ успешно создан:', createdOrder);
 
-            showMessage(`Заказ №${createdOrder.id} успешно оформлен! Сумма: ${parseFloat(createdOrder.total_amount).toFixed(2)} руб.`, 'success');
+            showMessage(`Заказ успешно оформлен! Сумма: ${parseFloat(createdOrder.total_amount).toFixed(2)} руб.`, 'success');
 
             cart = [];
             renderCart();
