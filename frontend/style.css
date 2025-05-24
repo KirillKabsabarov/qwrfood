@@ -158,7 +158,7 @@ header {
 }
 
 .header-logo {
-    padding-right: 200px;
+    padding-right: 275px;
     display: flex; /* Чтобы выровнять картинку */
     align-items: center; /* Выравниваем по вертикали по центру */
 }
